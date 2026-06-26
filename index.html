@@ -1656,6 +1656,7 @@ requestAnimationFrame(raf);
 window.onload = function() {
   // v6 : chaque étape est isolée — une erreur ponctuelle n'interrompt plus tout le démarrage.
   try { loadData(); } catch (e) { console.warn('loadData', e); plants = plants.length ? plants : [...basePlants]; }
+  try { migrateToV5(); } catch (e) { console.warn('migrateToV5', e); }
   try { renderCatalog(); } catch (e) { console.warn('renderCatalog', e); }
   try { initHeaderScroll(); } catch (e) { console.warn('initHeaderScroll', e); }
   try { initGSAPAnimations(); } catch (e) { console.warn('initGSAPAnimations', e); }
@@ -1702,6 +1703,36 @@ function saveData() {
   } catch(e) {
     showToast("Impossible d'enregistrer localement.");
   }
+}
+
+function migrateToV5() {
+  if (localStorage.getItem('herbier_v5_migrated')) return;
+  var SUBSTRAT = {
+    "Plante d'intérieur": [{m:'Terreau universel',p:60},{m:'Perlite',p:30},{m:'Écorces de pin',p:10}],
+    "Plante d'extérieur": [{m:'Terre de jardin',p:50},{m:'Compost',p:30},{m:'Gravier',p:20}],
+    "Plante bulbeuse":    [{m:'Terreau pour bulbes',p:60},{m:'Sable grossier',p:40}],
+    "Plante acidophile":  [{m:'Terreau acidophile',p:70},{m:'Écorces de pin',p:20},{m:'Sable',p:10}],
+    "Feuillage":          [{m:'Terre légère',p:60},{m:'Compost',p:30},{m:'Sable',p:10}]
+  };
+  plants = plants.map(function(p) {
+    var u = {};
+    if (!p.toxPets && p.toxicite && p.toxicite !== 'Non toxique') u.toxPets = 'toxic';
+    if (!p.exposition && p.soleil)  u.exposition  = p.soleil;
+    if (!p.arrosage   && p.eau)     u.arrosage    = p.eau;
+    if (!p.prepa        && p.pro_prep)  u.prepa        = p.pro_prep;
+    if (!p.tempIdeale   && p.pro_temp)  u.tempIdeale   = p.pro_temp;
+    if (!p.tenueVase    && p.pro_tenue) u.tenueVase    = p.pro_tenue;
+    if (!p.conservation && p.pro_cons)  u.conservation = p.pro_cons;
+    if (!p.stockage     && p.pro_stock) u.stockage     = p.pro_stock;
+    if (!p.precautions  && p.pro_prec)  u.precautions  = p.pro_prec;
+    if (!Array.isArray(p.substrat) || !p.substrat.length) {
+      var def = SUBSTRAT[p.type];
+      if (def) u.substrat = def;
+    }
+    return Object.keys(u).length ? Object.assign({}, p, u) : p;
+  });
+  saveData();
+  localStorage.setItem('herbier_v5_migrated', '1');
 }
 
 // --- RENDU DYNAMIQUE DU SCROLLYTELLING (CATALOGUE) ---
