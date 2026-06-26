@@ -637,8 +637,27 @@ body.flash-on .flashcard-overlay {
 .form-fieldset legend { font-family:var(--primary-serif); font-size:1rem; font-weight:600; padding:0 8px; color:var(--ink-deep); }
 .form-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 
-/* BADGE INVASIF */
-.badge-invasive { display:inline-flex; align-items:center; gap:6px; background:#d32f2f; color:#fff; padding:6px 14px; border-radius:20px; font-size:0.72rem; font-weight:700; letter-spacing:0.5px; margin-top:8px; }
+/* TAGS v5 — toxicité animaux / invasif / jardin */
+.v5-tags { display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 4px; }
+.v5-tag  { font-size:0.68rem; font-weight:700; border-radius:20px; padding:3px 11px; border:1px solid; cursor:default; letter-spacing:0.3px; }
+.tag-safe   { background:#e6f4ea; border-color:#9ed3b3; color:#22683f; }
+.tag-tox    { background:#fde8e8; border-color:#eaa9a9; color:#9b2c2c; }
+.tag-inv    { background:#fff3df; border-color:#f0cf9a; color:#9a6212; }
+.tag-garden { background:#e8f3e6; border-color:#a8cf9f; color:#2d6a31; }
+
+/* SUBSTRAT BARRE VISUELLE */
+.substrat-bar    { display:flex; height:11px; border-radius:6px; overflow:hidden; border:1px solid rgba(194,162,106,0.25); margin:6px 0 4px; }
+.substrat-legend { display:flex; flex-wrap:wrap; gap:3px 10px; font-size:0.68rem; color:var(--sage-green); }
+.substrat-legend span { display:flex; align-items:center; gap:4px; }
+.substrat-legend em  { width:8px; height:8px; border-radius:2px; display:inline-block; flex-shrink:0; font-style:normal; }
+
+/* ÉDITEUR SUBSTRAT (formulaire) */
+.sub-editor   { display:flex; flex-direction:column; gap:6px; margin-bottom:8px; }
+.sub-row      { display:flex; align-items:center; gap:8px; }
+.sub-row .sub-m { flex:1; }
+.sub-row .sub-p { width:70px; flex-shrink:0; }
+.sub-preview  { margin-top:4px; }
+.sub-add      { font-size:0.75rem; padding:6px 12px; margin-top:2px; }
 
 /* FIX SUPERPOSITION SCROLLY-CONTENT */
 .scrolly-content { display:flex; flex-direction:column; justify-content:center; overflow-y:auto; max-height:90vh; padding-right:4px; }
@@ -652,7 +671,9 @@ body.pro-on .pro-fleuriste { display:block; }
 /* DARK MODE — nouveaux éléments */
 body.theme-dark .form-fieldset { border-color:rgba(194,162,106,0.15); }
 body.theme-dark .form-tabs { border-bottom-color:rgba(194,162,106,0.15); }
-body.theme-dark .badge-invasive { box-shadow:0 0 8px rgba(211,47,47,0.4); }
+body.theme-dark .tag-safe { background:rgba(34,104,63,0.15); }
+body.theme-dark .tag-tox  { background:rgba(155,44,44,0.15); }
+body.theme-dark .tag-inv  { background:rgba(154,98,18,0.15); }
 
 /* TOAST NOTIFICATION */
 #toast {
@@ -1422,11 +1443,12 @@ html:has(body.care-on),html:has(body.quiz-on),html:has(body.cal-on),html:has(bod
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label" style="color:var(--terracotta)">⚠️ Toxicité pour animaux</label>
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-            <input type="checkbox" id="formToxAnim" style="width:auto;accent-color:var(--terracotta);">
-            <span style="font-size:0.85rem;font-family:var(--primary-sans);">Toxique pour animaux domestiques</span>
-          </div>
+          <label class="form-label" style="color:var(--terracotta)">🐾 Toxicité pour animaux</label>
+          <select id="formToxPets" class="form-control" style="margin-bottom:8px;">
+            <option value="">— Non renseigné</option>
+            <option value="safe">✅ Sans danger pour chiens/chats</option>
+            <option value="toxic">☠️ Toxique pour chiens/chats</option>
+          </select>
           <input type="text" id="formToxDetail" class="form-control" placeholder="Précisions : espèces concernées, symptômes...">
         </div>
         <div class="form-group">
@@ -1449,8 +1471,8 @@ html:has(body.care-on),html:has(body.quiz-on),html:has(body.cal-on),html:has(bod
         <legend>Besoins de Culture &amp; Substrat</legend>
         <div class="form-row-2">
           <div class="form-group">
-            <label class="form-label">Exposition</label>
-            <select id="formSoleil" class="form-control">
+            <label class="form-label">☀️ Exposition</label>
+            <select id="formExposition" class="form-control">
               <option value="">—</option>
               <option value="Plein soleil">Plein soleil</option>
               <option value="Mi-ombre">Mi-ombre</option>
@@ -1459,8 +1481,8 @@ html:has(body.care-on),html:has(body.quiz-on),html:has(body.cal-on),html:has(bod
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Arrosage</label>
-            <select id="formEau" class="form-control">
+            <label class="form-label">💧 Arrosage</label>
+            <select id="formArrosage" class="form-control">
               <option value="">—</option>
               <option value="Faible (1x par mois)">Faible (1x/mois)</option>
               <option value="Modéré (1x par semaine)">Modéré (1x/sem.)</option>
@@ -1470,27 +1492,29 @@ html:has(body.care-on),html:has(body.quiz-on),html:has(body.cal-on),html:has(bod
         </div>
         <div class="form-row-2">
           <div class="form-group">
-            <label class="form-label">Humidité</label>
+            <label class="form-label">💨 Humidité</label>
             <input type="text" id="formHumidite" class="form-control" placeholder="ex: 50–70%">
           </div>
           <div class="form-group">
-            <label class="form-label">Température</label>
+            <label class="form-label">🌡️ Température</label>
             <input type="text" id="formTemperature" class="form-control" placeholder="ex: 15–25°C">
           </div>
         </div>
         <div class="form-row-2">
           <div class="form-group">
-            <label class="form-label">Rempotage</label>
+            <label class="form-label">🪴 Rempotage</label>
             <input type="text" id="formRempotage" class="form-control" placeholder="ex: Tous les 2 ans, printemps">
           </div>
           <div class="form-group">
-            <label class="form-label">Engrais</label>
+            <label class="form-label">🌿 Engrais</label>
             <input type="text" id="formEngrais" class="form-control" placeholder="ex: NPK équilibré, mars–sept.">
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">Substrat (composants &amp; %)</label>
-          <input type="text" id="formSubstrat" class="form-control" placeholder="ex: Terreau 50%, Perlite 20%, Sable 30%">
+          <label class="form-label">🪨 Substrat conseillé</label>
+          <div class="sub-editor" id="subEditor"></div>
+          <button type="button" class="btn-luxe sub-add" onclick="addSubstratRow()"><i class="fa-solid fa-plus"></i> Ajouter un composant</button>
+          <div class="sub-preview" id="subPreview"></div>
         </div>
         <div class="form-group">
           <label class="form-label">URL Image</label>
@@ -1512,29 +1536,29 @@ html:has(body.care-on),html:has(body.quiz-on),html:has(body.cal-on),html:has(bod
         <legend>✂️ Mode Pro — Fleuriste</legend>
         <div class="form-group">
           <label class="form-label">Préparation avant vase</label>
-          <textarea id="formProPrep" class="form-control" rows="2" placeholder="Recoupe en biseau, reconditionner..."></textarea>
+          <textarea id="formPrepa" class="form-control" rows="2" placeholder="Recoupe en biseau, reconditionner..."></textarea>
         </div>
         <div class="form-row-2">
           <div class="form-group">
             <label class="form-label">Température idéale</label>
-            <input type="text" id="formProTemp" class="form-control" placeholder="ex: 4–8°C">
+            <input type="text" id="formTempIdeale" class="form-control" placeholder="ex: 4–8°C">
           </div>
           <div class="form-group">
             <label class="form-label">Tenue en vase</label>
-            <input type="text" id="formProTenue" class="form-control" placeholder="ex: 7–10 jours">
+            <input type="text" id="formTenueVase" class="form-control" placeholder="ex: 7–10 jours">
           </div>
         </div>
         <div class="form-group">
           <label class="form-label">Conservation</label>
-          <input type="text" id="formProCons" class="form-control" placeholder="ex: Chambre froide, papier kraft...">
+          <input type="text" id="formConservation" class="form-control" placeholder="ex: Chambre froide, papier kraft...">
         </div>
         <div class="form-group">
           <label class="form-label">Conseils de stockage</label>
-          <textarea id="formProStock" class="form-control" rows="2" placeholder="Conditions de stockage idéales..."></textarea>
+          <textarea id="formStockage" class="form-control" rows="2" placeholder="Conditions de stockage idéales..."></textarea>
         </div>
         <div class="form-group">
           <label class="form-label">Précautions</label>
-          <textarea id="formProPrec" class="form-control" rows="2" placeholder="Éthylène, courants d'air, luminosité..."></textarea>
+          <textarea id="formPrecautions" class="form-control" rows="2" placeholder="Éthylène, courants d'air, luminosité..."></textarea>
         </div>
       </fieldset>
     </div>
@@ -1803,15 +1827,25 @@ function renderCatalog() {
 
   catalog.innerHTML = filtered.map(p => {
     const inG = p.inGarden === true;
-    const tox = p.tox_anim || (p.toxicite && p.toxicite !== 'Non toxique');
-    const inv = !!p.invasive;
+    const toxPets = p.toxPets || (p.tox_anim ? 'toxic' : '');
+    const isTox = toxPets === 'toxic';
     const soins = p.besoins || p.description || '';
+    const exposi = p.exposition || p.soleil || '';
+    const arrosa = p.arrosage  || p.eau    || '';
+    // Bloc pro : noms v5 avec fallback anciens noms
+    const fPrepa  = p.prepa      || p.pro_prep  || '';
+    const fTempI  = p.tempIdeale || p.pro_temp  || '';
+    const fTenue  = p.tenueVase  || p.pro_tenue || '';
+    const fCons   = p.conservation||p.pro_cons  || '';
+    const fPrec   = p.precautions|| p.pro_prec  || '';
+    const hasPro  = fPrepa||fTempI||fTenue||fCons||fPrec;
+    const subBar  = mkSubstratBar(p.substrat);
     return `
       <section class="scrolly-section" id="section-${p.id}" data-w1="${esc(p.w1||p.nomLat)}" data-w2="${esc(p.w2||p.nomLat)}">
         <div class="scrolly-grid">
           <div class="scrolly-media" id="media-${p.id}">
             <img alt="${esc(p.nomFr)}" class="scrolly-img" loading="lazy" decoding="async" src="${HERO_FALLBACK}" onerror="this.src='${HERO_FALLBACK}'">
-            ${tox ? `<div class="scrolly-overlay-badge"><i class="fa-solid fa-triangle-exclamation"></i> ${esc(p.tox_detail||p.toxicite||'Toxique')}</div>` : ''}
+            ${isTox ? `<div class="scrolly-overlay-badge"><i class="fa-solid fa-triangle-exclamation"></i> ${esc(p.toxDetail||p.tox_detail||'Toxique animaux')}</div>` : ''}
             <div class="water-indicator-floating"><i class="fa-solid fa-scissors"></i> ${esc(p.type||'')}</div>
             <div class="media-zoom-cue"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
             <button class="media-nav media-prev" onclick="sectionImg('${p.id}',-1,event)" aria-label="Photo précédente"><i class="fa-solid fa-chevron-left"></i></button>
@@ -1822,20 +1856,21 @@ function renderCatalog() {
             <span class="plant-family">${esc(p.famille)}</span>
             <div class="plant-name-lat">${esc(p.nomLat)}</div>
             <h2 class="plant-name-fr">${esc(p.nomFr)}</h2>
-            ${inv ? `<div class="badge-invasive">⚠️ Attention : Risque d'épillets / Invasive</div>` : ''}
-            <p class="plant-desc" style="margin-top:12px">${esc(soins.substring(0,120))}${soins.length>120?'…':''}</p>
+            ${mkV5Tags(p)}
+            <p class="plant-desc" style="margin-top:10px">${esc(soins.substring(0,120))}${soins.length>120?'…':''}</p>
             <div class="pro-details">
               <span class="tech-label" style="color:var(--terracotta)"><i class="fa-solid fa-bug-slash"></i> Sensibilités &amp; Ennemis</span>
               <p style="margin-top:5px;font-size:0.85rem;">${esc(p.ennemis||'')}</p>
             </div>
+            ${hasPro ? `
             <div class="pro-fleuriste">
               <span class="tech-label" style="color:var(--gold)"><i class="fa-solid fa-scissors"></i> Fiche Fleuriste</span>
-              ${p.pro_prep ? `<p style="margin-top:5px;font-size:0.82rem;"><strong>Préparation :</strong> ${esc(p.pro_prep)}</p>` : ''}
-              ${p.pro_temp ? `<p style="font-size:0.82rem;"><strong>Température :</strong> ${esc(p.pro_temp)}</p>` : ''}
-              ${p.pro_tenue ? `<p style="font-size:0.82rem;"><strong>Tenue en vase :</strong> ${esc(p.pro_tenue)}</p>` : ''}
-              ${p.pro_cons ? `<p style="font-size:0.82rem;"><strong>Conservation :</strong> ${esc(p.pro_cons)}</p>` : ''}
-              ${p.pro_prec ? `<p style="font-size:0.82rem;"><strong>Précautions :</strong> ${esc(p.pro_prec)}</p>` : ''}
-            </div>
+              ${fPrepa ? `<p style="margin-top:5px;font-size:0.82rem;"><strong>Préparation :</strong> ${esc(fPrepa)}</p>` : ''}
+              ${fTempI ? `<p style="font-size:0.82rem;"><strong>Température :</strong> ${esc(fTempI)}</p>` : ''}
+              ${fTenue ? `<p style="font-size:0.82rem;"><strong>Tenue en vase :</strong> ${esc(fTenue)}</p>` : ''}
+              ${fCons  ? `<p style="font-size:0.82rem;"><strong>Conservation :</strong> ${esc(fCons)}</p>` : ''}
+              ${fPrec  ? `<p style="font-size:0.82rem;"><strong>Précautions :</strong> ${esc(fPrec)}</p>` : ''}
+            </div>` : ''}
             <div class="technical-grid">
               <div class="tech-item"><span class="tech-label">Origine</span><span class="tech-val"><i class="fa-solid fa-location-dot" style="color:var(--gold)"></i> ${esc(p.region||'—')}</span></div>
               ${p.visu1 ? `<div class="tech-item"><span class="tech-label">Reconnaissance</span><span class="tech-val"><i class="fa-solid fa-leaf" style="color:var(--sage-green)"></i> ${esc(p.visu1)}</span></div>` : ''}
@@ -1845,9 +1880,13 @@ function renderCatalog() {
               ${p.couleur ? `<div class="tech-item"><span class="tech-label">Couleur</span><span class="tech-val">${esc(p.couleur)}</span></div>` : ''}
               ${p.rusticite ? `<div class="tech-item"><span class="tech-label">Rusticité</span><span class="tech-val">${esc(p.rusticite)}</span></div>` : ''}
               ${p.fl_texte ? `<div class="tech-item"><span class="tech-label">Floraison</span><span class="tech-val">🌸 ${esc(p.fl_texte)}</span></div>` : ''}
-              ${p.soleil ? `<div class="tech-item"><span class="tech-label">Exposition</span><span class="tech-val"><i class="fa-solid fa-sun" style="color:var(--gold)"></i> ${esc(p.soleil)}</span></div>` : ''}
-              ${p.eau ? `<div class="tech-item"><span class="tech-label">Arrosage</span><span class="tech-val"><i class="fa-solid fa-droplet" style="color:#7ab8d4"></i> ${esc(p.eau)}</span></div>` : ''}
-              ${p.substrat ? `<div class="tech-item" style="grid-column:1/-1"><span class="tech-label">Substrat</span><span class="tech-val">${esc(p.substrat)}</span></div>` : ''}
+              ${exposi ? `<div class="tech-item"><span class="tech-label">☀️ Exposition</span><span class="tech-val">${esc(exposi)}</span></div>` : ''}
+              ${arrosa ? `<div class="tech-item"><span class="tech-label">💧 Arrosage</span><span class="tech-val">${esc(arrosa)}</span></div>` : ''}
+              ${p.humidite ? `<div class="tech-item"><span class="tech-label">💨 Humidité</span><span class="tech-val">${esc(p.humidite)}</span></div>` : ''}
+              ${p.temperature ? `<div class="tech-item"><span class="tech-label">🌡️ Température</span><span class="tech-val">${esc(p.temperature)}</span></div>` : ''}
+              ${p.rempotage ? `<div class="tech-item"><span class="tech-label">🪴 Rempotage</span><span class="tech-val">${esc(p.rempotage)}</span></div>` : ''}
+              ${p.engrais ? `<div class="tech-item"><span class="tech-label">🌿 Engrais</span><span class="tech-val">${esc(p.engrais)}</span></div>` : ''}
+              ${subBar ? `<div class="tech-item" style="grid-column:1/-1"><span class="tech-label">🪨 Substrat conseillé</span>${subBar}</div>` : ''}
             </div>
             ${(typeof window.__enrichChips === 'function') ? window.__enrichChips(p) : ''}
             <div class="plant-actions">
@@ -2134,6 +2173,71 @@ function _gc(id) { var el = document.getElementById(id); return el ? el.checked 
 function _sv(id, v) { var el = document.getElementById(id); if(el) el.value = v||''; }
 function _sc(id, v) { var el = document.getElementById(id); if(el) el.checked = !!v; }
 
+// ── Couleurs palette substrat (identiques v5) ──
+var SUBSTRAT_COLORS = ['#6b4f3a','#8a9a5b','#c9a66b','#5e7e8b','#9b7653','#a8c686','#7d6b8a'];
+
+// Construit la barre visuelle substrat depuis un tableau [{m,p}]
+function mkSubstratBar(substrat) {
+  var list = Array.isArray(substrat) ? substrat.filter(function(s){return s&&s.m;}) : [];
+  if (!list.length) return '';
+  var total = list.reduce(function(s,x){return s+(Number(x.p)||0);},0)||1;
+  var bar='',leg='';
+  list.forEach(function(s,i){
+    var col = SUBSTRAT_COLORS[i % SUBSTRAT_COLORS.length];
+    var pct = Math.round((Number(s.p)||0)/total*100);
+    bar += '<div style="width:'+pct+'%;background:'+col+'" title="'+esc(s.m)+' '+pct+'%"></div>';
+    leg += '<span><em style="background:'+col+'"></em>'+pct+'% '+esc(s.m)+'</span>';
+  });
+  return '<div class="substrat-bar">'+bar+'</div><div class="substrat-legend">'+leg+'</div>';
+}
+
+// Tags d'alerte v5 (toxicité animaux, invasif) intégrés au design luxe
+function mkV5Tags(p) {
+  var tags = [];
+  var toxPets = p.toxPets || (p.tox_anim ? 'toxic' : '');
+  if (toxPets === 'safe') tags.push('<span class="v5-tag tag-safe">🐾 Sans danger animaux</span>');
+  else if (toxPets === 'toxic') tags.push('<span class="v5-tag tag-tox">☠️ Toxique animaux</span>');
+  if (p.invasive) tags.push('<span class="v5-tag tag-inv">⚠️ Invasive / Épillets</span>');
+  if (p.inGarden) tags.push('<span class="v5-tag tag-garden">🌱 Au jardin</span>');
+  return tags.length ? '<div class="v5-tags">'+tags.join('')+'</div>' : '';
+}
+
+// Éditeur substrat — ajout d'une ligne {m, p}
+window.addSubstratRow = function(mat, pct) {
+  var ed = document.getElementById('subEditor'); if (!ed) return;
+  var idx = ed.querySelectorAll('.sub-row').length;
+  var col = SUBSTRAT_COLORS[idx % SUBSTRAT_COLORS.length];
+  var row = document.createElement('div'); row.className = 'sub-row';
+  row.innerHTML = '<input type="text" class="form-control sub-m" placeholder="ex: Terreau, Perlite…" value="'+esc(mat||'')+'">'
+    +'<input type="number" class="form-control sub-p" min="0" max="100" placeholder="%" value="'+(pct||'')+'" style="border-left:3px solid '+col+'">'
+    +'<button type="button" class="btn-luxe" onclick="removeSubstratRow(this)" style="padding:8px 10px;"><i class="fa-solid fa-xmark"></i></button>';
+  row.querySelector('.sub-m').addEventListener('input', updateSubstratPreview);
+  row.querySelector('.sub-p').addEventListener('input', updateSubstratPreview);
+  ed.appendChild(row);
+  updateSubstratPreview();
+};
+window.removeSubstratRow = function(btn) {
+  var row = btn.closest('.sub-row'); if (row) row.remove();
+  updateSubstratPreview();
+};
+function updateSubstratPreview() {
+  var prev = document.getElementById('subPreview'); if (!prev) return;
+  prev.innerHTML = mkSubstratBar(readSubstratRows());
+}
+function readSubstratRows() {
+  var ed = document.getElementById('subEditor'); if (!ed) return [];
+  return Array.from(ed.querySelectorAll('.sub-row')).map(function(r){
+    return {m: (r.querySelector('.sub-m')||{}).value||'', p: (r.querySelector('.sub-p')||{}).value||0};
+  }).filter(function(s){return s.m;});
+}
+function renderSubstratRows(substrat) {
+  var ed = document.getElementById('subEditor'); if (!ed) return;
+  ed.innerHTML = '';
+  var list = Array.isArray(substrat) ? substrat : [];
+  list.filter(function(s){return s&&s.m;}).forEach(function(s){ addSubstratRow(s.m, s.p); });
+  updateSubstratPreview();
+}
+
 function openEditDrawer(id) {
   openDrawer('edit');
   const p = plants.find(item => item.id === id);
@@ -2153,25 +2257,25 @@ function openEditDrawer(id) {
     _sv('formCouleur', p.couleur);
     _sv('formRusticite', p.rusticite);
     _sv('formFlTexte', p.fl_texte);
-    _sc('formToxAnim', p.tox_anim);
-    _sv('formToxDetail', p.tox_detail);
+    _sv('formToxPets', p.toxPets || (p.tox_anim ? 'toxic' : ''));
+    _sv('formToxDetail', p.tox_detail || p.toxDetail || '');
     _sc('formInvasive', p.invasive);
     _sv('formMnemonic', p.mnemonic);
-    _sv('formSoleil', p.soleil);
-    _sv('formEau', p.eau);
+    _sv('formExposition', p.exposition || p.soleil || '');
+    _sv('formArrosage', p.arrosage || p.eau || '');
     _sv('formHumidite', p.humidite);
     _sv('formTemperature', p.temperature);
     _sv('formRempotage', p.rempotage);
     _sv('formEngrais', p.engrais);
-    _sv('formSubstrat', p.substrat);
+    renderSubstratRows(p.substrat);
     _sv('formImgUrl', p.imgUrl);
     _sv('formPrincipes', p.principes);
-    _sv('formProPrep', p.pro_prep);
-    _sv('formProTemp', p.pro_temp);
-    _sv('formProTenue', p.pro_tenue);
-    _sv('formProCons', p.pro_cons);
-    _sv('formProStock', p.pro_stock);
-    _sv('formProPrec', p.pro_prec);
+    _sv('formPrepa',       p.prepa      || p.pro_prep  || '');
+    _sv('formTempIdeale',  p.tempIdeale || p.pro_temp  || '');
+    _sv('formTenueVase',   p.tenueVase  || p.pro_tenue || '');
+    _sv('formConservation',p.conservation||p.pro_cons  || '');
+    _sv('formStockage',    p.stockage   || p.pro_stock || '');
+    _sv('formPrecautions', p.precautions|| p.pro_prec  || '');
     switchFormTab(0);
   }
 }
@@ -2179,45 +2283,50 @@ function openEditDrawer(id) {
 // Formulaire Soumission
 function handleFormSubmit(e) {
   e.preventDefault();
-  const id = _gv('formPlantId');
-  const nomFr = _gv('formNomFr');
-  const nomLat = _gv('formNomLat');
-  const famille = _gv('formFamille');
-  const type = _gv('formType');
-  const region = _gv('formRegion');
-  const besoins = _gv('formBesoins');
-  const ennemis = _gv('formEnnemis');
-  const feuillage = _gv('formFeuillage');
-  const port = _gv('formPort');
-  const hauteur = _gv('formHauteur');
-  const couleur = _gv('formCouleur');
-  const rusticite = _gv('formRusticite');
-  const fl_texte = _gv('formFlTexte');
-  const tox_anim = _gc('formToxAnim');
-  const tox_detail = _gv('formToxDetail');
-  const invasive = _gc('formInvasive');
-  const mnemonic = _gv('formMnemonic');
-  const soleil = _gv('formSoleil');
-  const eau = _gv('formEau');
-  const humidite = _gv('formHumidite');
+  const id          = _gv('formPlantId');
+  const nomFr       = _gv('formNomFr');
+  const nomLat      = _gv('formNomLat');
+  const famille     = _gv('formFamille');
+  const type        = _gv('formType');
+  const region      = _gv('formRegion');
+  const besoins     = _gv('formBesoins');
+  const ennemis     = _gv('formEnnemis');
+  const feuillage   = _gv('formFeuillage');
+  const port        = _gv('formPort');
+  const hauteur     = _gv('formHauteur');
+  const couleur     = _gv('formCouleur');
+  const rusticite   = _gv('formRusticite');
+  const fl_texte    = _gv('formFlTexte');
+  const toxPets     = _gv('formToxPets');           // 'safe' | 'toxic' | ''
+  const toxDetail   = _gv('formToxDetail');
+  const invasive    = _gc('formInvasive');
+  const mnemonic    = _gv('formMnemonic');
+  const exposition  = _gv('formExposition');
+  const arrosage    = _gv('formArrosage');
+  const humidite    = _gv('formHumidite');
   const temperature = _gv('formTemperature');
-  const rempotage = _gv('formRempotage');
-  const engrais = _gv('formEngrais');
-  const substrat = _gv('formSubstrat');
-  const imgUrl = _gv('formImgUrl');
-  const principes = _gv('formPrincipes');
-  const pro_prep = _gv('formProPrep');
-  const pro_temp = _gv('formProTemp');
-  const pro_tenue = _gv('formProTenue');
-  const pro_cons = _gv('formProCons');
-  const pro_stock = _gv('formProStock');
-  const pro_prec = _gv('formProPrec');
-  const toxicite = tox_anim ? (tox_detail || 'Toxique pour animaux') : 'Non toxique';
+  const rempotage   = _gv('formRempotage');
+  const engrais     = _gv('formEngrais');
+  const substrat    = readSubstratRows();            // Array [{m,p}]
+  const imgUrl      = _gv('formImgUrl');
+  const principes   = _gv('formPrincipes');
+  const prepa       = _gv('formPrepa');
+  const tempIdeale  = _gv('formTempIdeale');
+  const tenueVase   = _gv('formTenueVase');
+  const conservation= _gv('formConservation');
+  const stockage    = _gv('formStockage');
+  const precautions = _gv('formPrecautions');
+  // Compat legacy : toxicite string dérivée de toxPets
+  const toxicite = toxPets === 'toxic' ? (toxDetail || 'Toxique pour animaux') : 'Non toxique';
+  // Compat legacy : soleil/eau = exposition/arrosage
+  const soleil = exposition; const eau = arrosage;
 
   const newFields = { nomFr, nomLat, famille, type, region, besoins, description: besoins, ennemis,
-    feuillage, port, hauteur, couleur, rusticite, fl_texte, tox_anim, tox_detail, toxicite, invasive, mnemonic,
-    soleil, eau, humidite, temperature, rempotage, engrais, substrat, imgUrl, principes,
-    pro_prep, pro_temp, pro_tenue, pro_cons, pro_stock, pro_prec };
+    feuillage, port, hauteur, couleur, rusticite, fl_texte,
+    toxPets, toxDetail, toxicite, invasive, mnemonic,
+    exposition, arrosage, soleil, eau,
+    humidite, temperature, rempotage, engrais, substrat, imgUrl, principes,
+    prepa, tempIdeale, tenueVase, conservation, stockage, precautions };
 
   if (id) {
     const index = plants.findIndex(item => item.id === id);
@@ -2862,8 +2971,9 @@ var advFilters={fam:'',type:'',tox:'',zone:'',inv:''},advSort='default';
 window.__advFilter=function(p){
   if(advFilters.fam&&p.famille!==advFilters.fam)return false;
   if(advFilters.type&&p.type!==advFilters.type)return false;
-  if(advFilters.tox==='toxic'&&!(p.tox_anim||(p.toxicite&&p.toxicite!=='Non toxique')))return false;
-  if(advFilters.tox==='safe'&&(p.tox_anim||(p.toxicite&&p.toxicite!=='Non toxique')))return false;
+  var _isToxic=(p.toxPets==='toxic')||(p.tox_anim===true)||((p.toxicite)&&p.toxicite!=='Non toxique');
+  if(advFilters.tox==='toxic'&&!_isToxic)return false;
+  if(advFilters.tox==='safe'&&_isToxic)return false;
   if(advFilters.inv==='invasive'&&!p.invasive)return false;
   if(advFilters.inv==='noninvasive'&&p.invasive)return false;
   if(advFilters.zone){var z=(journal[p.id]&&journal[p.id].zone)||'';if(z!==advFilters.zone)return false;}
@@ -2882,11 +2992,14 @@ window.__enrichChips=function(p){
   if(p.feuillage)c.push('<span class="v7-chip"><i class="fa-solid fa-leaf"></i> '+esc2(p.feuillage)+'</span>');
   if(p.hauteur)c.push('<span class="v7-chip"><i class="fa-solid fa-ruler-vertical"></i> '+esc2(p.hauteur)+'</span>');
   if(p.rusticite)c.push('<span class="v7-chip"><i class="fa-solid fa-snowflake"></i> '+esc2(p.rusticite)+'</span>');
-  if(p.soleil)c.push('<span class="v7-chip"><i class="fa-solid fa-sun"></i> '+esc2(p.soleil)+'</span>');
-  if(p.eau)c.push('<span class="v7-chip"><i class="fa-solid fa-droplet"></i> '+esc2(p.eau)+'</span>');
+  var _chip_sol=p.exposition||p.soleil;
+  if(_chip_sol)c.push('<span class="v7-chip"><i class="fa-solid fa-sun"></i> '+esc2(_chip_sol)+'</span>');
+  var _chip_eau=p.arrosage||p.eau;
+  if(_chip_eau)c.push('<span class="v7-chip"><i class="fa-solid fa-droplet"></i> '+esc2(_chip_eau)+'</span>');
   if(p.temperature)c.push('<span class="v7-chip"><i class="fa-solid fa-thermometer-half"></i> '+esc2(p.temperature)+'</span>');
   if(p.principes)c.push('<span class="v7-chip"><i class="fa-solid fa-flask"></i> '+esc2(p.principes)+'</span>');
-  if(p.tox_anim)c.push('<span class="v7-chip" style="color:#d32f2f;border-color:#d32f2f">⚠️ Toxique animaux</span>');
+  var _chip_tox=(p.toxPets==='toxic')||p.tox_anim;
+  if(_chip_tox)c.push('<span class="v7-chip" style="color:#d32f2f;border-color:#d32f2f">⚠️ Toxique animaux</span>');
   if(p.invasive)c.push('<span class="v7-chip" style="color:#d32f2f;border-color:#d32f2f">🌾 Invasive</span>');
   var z=(journal[p.id]&&journal[p.id].zone);
   if(z)c.push('<span class="v7-chip"><i class="fa-solid fa-location-dot"></i> '+esc2(z)+'</span>');
@@ -2938,9 +3051,28 @@ window.clearCompare=function(){cmp=[];updateCmpBar();reflectCmpButtons();};
 window.openCompare=function(){
   if(cmp.length<2){toast(lang==='en'?'Select at least 2 species':'Selectionnez au moins 2 especes');return;}
   var ps=cmp.map(getPlant).filter(Boolean);var fr=(lang!=='en');
-  var rows=[['Nom latin','Latin name','nomLat'],['Famille','Family','famille'],['Type','Type','type'],['Origine','Origin','region'],['Feuillage','Foliage','feuillage'],['Port','Habit','port'],['Hauteur','Height','hauteur'],['Rusticite','Hardiness','rusticite'],['Floraison','Blooming','fl_texte'],['Toxicite animaux','Animal toxicity','tox_detail'],['Soleil','Sun','soleil'],['Eau','Water','eau'],['Substrat','Substrate','substrat'],['Conservation','Care','besoins'],['Sensibilites','Pests','ennemis'],['Tenue vase','Vase life','pro_tenue'],['Temperature','Temperature','pro_temp']];
+  var rows=[
+    ['Nom latin','Latin name',function(p){return p.nomLat;}],
+    ['Famille','Family',function(p){return p.famille;}],
+    ['Type','Type',function(p){return p.type;}],
+    ['Origine','Origin',function(p){return p.region;}],
+    ['Feuillage','Foliage',function(p){return p.feuillage;}],
+    ['Port','Habit',function(p){return p.port;}],
+    ['Hauteur','Height',function(p){return p.hauteur;}],
+    ['Rusticite','Hardiness',function(p){return p.rusticite;}],
+    ['Floraison','Blooming',function(p){return p.fl_texte;}],
+    ['Toxicite animaux','Animal toxicity',function(p){return p.toxDetail||p.tox_detail;}],
+    ['Exposition','Sun exposure',function(p){return p.exposition||p.soleil;}],
+    ['Arrosage','Watering',function(p){return p.arrosage||p.eau;}],
+    ['Substrat','Substrate',function(p){var s=p.substrat;return Array.isArray(s)?s.map(function(x){return (x.p||'?')+'% '+x.m;}).join(', '):(s||'');}],
+    ['Conservation','Care',function(p){return p.besoins;}],
+    ['Sensibilites','Pests',function(p){return p.ennemis;}],
+    ['Tenue vase','Vase life',function(p){return p.tenueVase||p.pro_tenue;}],
+    ['Temperature ideale','Ideal temp.',function(p){return p.tempIdeale||p.pro_temp;}],
+    ['Conservation (pro)','Conservation',function(p){return p.conservation||p.pro_cons;}]
+  ];
   var h='<h2 class="v7-h">'+(fr?'Comparatif':'Comparison')+'</h2><div class="v7-cmp-wrap"><table class="v7-cmp-table"><thead><tr><th></th>'+ps.map(function(p){return '<th>'+esc2(p.nomFr)+'</th>';}).join('')+'</tr></thead><tbody>';
-  rows.forEach(function(r){h+='<tr><td class="v7-cmp-lbl">'+(fr?r[0]:r[1])+'</td>'+ps.map(function(p){var v=p[r[2]];return '<td>'+esc2(v?v:'—')+'</td>';}).join('')+'</tr>';});
+  rows.forEach(function(r){h+='<tr><td class="v7-cmp-lbl">'+(fr?r[0]:r[1])+'</td>'+ps.map(function(p){var v=r[2](p);return '<td>'+esc2(v?v:'—')+'</td>';}).join('')+'</tr>';});
   h+='</tbody></table></div>';
   openModalHTML(h);
 };
