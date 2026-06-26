@@ -666,9 +666,7 @@ body.flash-on .flashcard-overlay {
 .scrolly-section { overflow:hidden; }
 
 /* PRO FLEURISTE FIELDS */
-.pro-fleuriste { display:none; background:rgba(194,162,106,0.05); border-left:2px solid var(--gold); padding:14px; margin:12px 0 20px; border-radius:0 6px 6px 0; }
-body.pro-on .pro-fleuriste,
-body.mode-learn .pro-fleuriste { display:block; }
+.pro-fleuriste { display:block; background:rgba(194,162,106,0.05); border-left:2px solid var(--gold); padding:14px; margin:12px 0 20px; border-radius:0 6px 6px 0; }
 
 /* DARK MODE — nouveaux éléments */
 body.theme-dark .form-fieldset { border-color:rgba(194,162,106,0.15); }
@@ -1289,7 +1287,6 @@ html:has(body.care-on),html:has(body.quiz-on),html:has(body.cal-on),html:has(bod
       </div>
       <button class="btn-luxe learn-only" id="flashBtn" onclick="toggleFlashMode()"><i class="fa-solid fa-brain"></i> Flashcards</button>
       <button class="btn-luxe learn-only" id="quizBtn" onclick="toggleQuizMode()"><i class="fa-solid fa-trophy"></i> Quiz</button>
-      <button class="btn-luxe learn-only" id="proBtn" onclick="toggleProMode()"><i class="fa-solid fa-mortar-pestle"></i> Herboristerie</button>
       <button class="btn-luxe" id="calBtn" onclick="toggleCalMode()"><i class="fa-solid fa-calendar-days"></i> Floraisons</button>
       <button class="btn-luxe" id="careBtn" onclick="toggleCareMode()"><i class="fa-solid fa-hand-holding-droplet"></i> Soins</button>
       <button class="btn-luxe" id="printBtn" onclick="buildPrint()"><i class="fa-solid fa-print"></i> Imprimer</button>
@@ -1688,10 +1685,6 @@ function loadData() {
     }
     
     // Charger états des modes
-    proMode = localStorage.getItem('herbier_promode') === 'true';
-    document.body.classList.toggle('pro-on', proMode);
-    document.getElementById('proBtn').classList.toggle('active', proMode);
-    
     appMode = localStorage.getItem('herbier_appmode') || 'learn';
     updateModeUI();
   } catch(e) {
@@ -2171,14 +2164,6 @@ function setMode(m){
   updateModeUI(); renderCatalog();
 }
 
-function toggleProMode() {
-  proMode = !proMode;
-  localStorage.setItem('herbier_promode', proMode);
-  document.body.classList.toggle('pro-on', proMode);
-  document.getElementById('proBtn').classList.toggle('active', proMode);
-  showToast(proMode ? "Herboristerie et détails de santé activés" : "Détails médicaux désactivés");
-  renderCatalog();
-}
 
 function toggleGardenStatus(id) {
   const p = plants.find(item => item.id === id);
@@ -2811,7 +2796,6 @@ function initV6Enhancements(){
   <div class="mnav-divider"></div>
   <button class="mnav-btn learn-only" onclick="closeMobileNav();toggleFlashMode()"><i class="fa-solid fa-brain" aria-hidden="true"></i> Flashcards</button>
   <button class="mnav-btn learn-only" onclick="closeMobileNav();toggleQuizMode()"><i class="fa-solid fa-trophy" aria-hidden="true"></i> Quiz</button>
-  <button class="mnav-btn learn-only" onclick="closeMobileNav();toggleProMode()"><i class="fa-solid fa-mortar-pestle" aria-hidden="true"></i> Herboristerie</button>
   <button class="mnav-btn" onclick="closeMobileNav();toggleCalMode()"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i> Floraisons</button>
   <button class="mnav-btn" onclick="closeMobileNav();toggleCareMode()"><i class="fa-solid fa-hand-holding-droplet" aria-hidden="true"></i> Soins</button>
   <button class="mnav-btn" onclick="closeMobileNav();buildPrint()"><i class="fa-solid fa-print" aria-hidden="true"></i> Imprimer</button>
@@ -2998,7 +2982,7 @@ window.toggleTheme=function(){theme=(theme==='dark'?'light':'dark');S('hdv_theme
 
 /* ---------- i18n (libelles d'interface) ---------- */
 var lang=L('hdv_lang','fr');
-var navEN={flashBtn:'Flashcards',quizBtn:'Quiz',proBtn:'Pro',calBtn:'Bloom',careBtn:'Care',printBtn:'Print',dashBtn:'Stats'};
+var navEN={flashBtn:'Flashcards',quizBtn:'Quiz',calBtn:'Bloom',careBtn:'Care',printBtn:'Print',dashBtn:'Stats'};
 var navFR={};
 function captureNavFR(){Object.keys(navEN).forEach(function(id){var b=$(id);if(b)navFR[id]=b.textContent.trim();});}
 function setBtn(id,label){var b=$(id);if(!b)return;var ic=b.querySelector('i');var icon=ic?ic.outerHTML:'';b.innerHTML=icon+' '+label;}
