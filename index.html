@@ -2150,6 +2150,7 @@ function openDrawer(type, plantId = null) {
 
   if (type === 'add') {
     title.textContent = "Inscrire un spécimen";
+    renderSubstratRows([]);
   }
 
   drawer.classList.add('open');
