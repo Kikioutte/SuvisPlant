@@ -2770,9 +2770,9 @@ async function autoFillFromWiki(forcedTitle) {
 
         // Essai en cascade sur plusieurs modèles (disponibilité variable selon la clé/région)
         var _gModels = [
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
           'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
-          'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
-          'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent'
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent'
         ];
         var _gData = null;
         var _gLastErr = '';
