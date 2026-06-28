@@ -2800,10 +2800,17 @@ async function autoFillFromWiki(forcedTitle) {
         var _gText = (_gData.candidates && _gData.candidates[0] &&
           _gData.candidates[0].content && _gData.candidates[0].content.parts &&
           _gData.candidates[0].content.parts[0] && _gData.candidates[0].content.parts[0].text) || '';
+        // Nettoyer les balises markdown que Gemini ajoute parfois
+        var _gClean = _gText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
         var _gJson = null;
-        try { var _gM = _gText.match(/\{[\s\S]*\}/); if (_gM) _gJson = JSON.parse(_gM[0]); }
-        catch(e2) { console.warn('Gemini JSON parse error:', _gText); }
-        if (!_gJson) console.warn('Gemini raw text:', _gText.substring(0, 500));
+        var _gParseErr = '';
+        try { var _gM = _gClean.match(/\{[\s\S]*\}/); if (_gM) _gJson = JSON.parse(_gM[0]); }
+        catch(e2) { _gParseErr = e2.message; }
+        if (!_gJson) {
+          var _dbg = 'début:«' + _gClean.substring(0, 80) + '» fin:«' + _gClean.slice(-80) + '» err:' + _gParseErr;
+          console.warn('Gemini parse fail:', _dbg);
+          setAutoFillStatus('✓ ' + filled.length + ' champs Wikipedia · IA parse fail — ' + _dbg, 'ok');
+        }
 
         if (_gJson) {
           var _gFilled = [];
@@ -2822,7 +2829,7 @@ async function autoFillFromWiki(forcedTitle) {
           setAutoFillStatus('✓ ' + _tot + ' champs importés' +
             (_gFilled.length ? ' · IA : ' + _gFilled.join(', ') : ''), 'ok');
         } else {
-          setAutoFillStatus('✓ ' + filled.length + ' champs Wikipedia · IA : réponse tronquée, réessayez.', 'ok');
+          // (message déjà affiché dans le bloc de debug ci-dessus)
         }
         } // fin else (!_gData.error)
       } catch(gErr) {
