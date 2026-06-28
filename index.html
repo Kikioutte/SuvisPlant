@@ -2546,12 +2546,64 @@ async function autoFillFromWiki(forcedTitle) {
       } catch(e) { /* Wikidata optionnel — on continue sans */ }
     }
 
-    // 4. Extraire champs depuis infobox wikitext (fallbacks)
-    var itFamille  = _wikiField(wikitext, ['famille','Famille','family','taxon_famille']);
-    var itRegion   = _wikiField(wikitext, ['aire_de_répartition','répartition','native_range','origine','distribution']);
-    var itToxicite = _wikiField(wikitext, ['toxicité','toxicite','toxicity']);
-    var itSoleil   = _wikiField(wikitext, ['exposition','ensoleillement','soleil']);
-    var itEau      = _wikiField(wikitext, ['arrosage','eau']);
+    // 4. Extraire tous les champs depuis l'infobox wikitext
+    var itFamille    = _wikiField(wikitext, ['famille','Famille','family','taxon_famille']);
+    var itRegion     = _wikiField(wikitext, ['aire_de_répartition','répartition','native_range','origine','distribution']);
+    var itToxicite   = _wikiField(wikitext, ['toxicité','toxicite','toxicity','toxic']);
+    var itSoleil     = _wikiField(wikitext, ['exposition','ensoleillement','soleil','lumière']);
+    var itEau        = _wikiField(wikitext, ['arrosage','eau','water','irrigation']);
+    var itHauteur    = _wikiField(wikitext, ['taille','hauteur','height','taille_maximum','taille_adulte']);
+    var itCouleur    = _wikiField(wikitext, ['couleur_fleurs','couleur_des_fleurs','flower_color','couleur','color']);
+    var itFloraison  = _wikiField(wikitext, ['floraison','époque_de_floraison','flowering_time','période_de_floraison','flowering','saison_floraison']);
+    var itRusticite  = _wikiField(wikitext, ['rusticité','zone_usda','hardiness','résistance_au_froid','rusticite','zone']);
+    var itHumidite   = _wikiField(wikitext, ['humidité','humidite','humidity','hygrométrie']);
+    var itTemperature= _wikiField(wikitext, ['température','temperature','temp_min','température_minimale','temp']);
+    var itEnnemis    = _wikiField(wikitext, ['maladies','ravageurs','pests','maladies_et_ravageurs','parasites','nuisibles']);
+    var itPrincipes  = _wikiField(wikitext, ['principes_actifs','constituants','composants','active_substances','composés']);
+    var itFeuillage  = _wikiField(wikitext, ['feuillage','type_feuillage','leaf_type','feuilles_type','persistance']);
+    var itPort       = _wikiField(wikitext, ['port','forme','habit','growth_form','croissance']);
+    var itEngrais    = _wikiField(wikitext, ['fertilisation','engrais','fertilizer','nutrition']);
+    var itSubstrat   = _wikiField(wikitext, ['substrat','sol','soil','terrain','type_sol']);
+    var itVisu1      = _wikiField(wikitext, ['fleurs','inflorescence','fleur','flower','inflorescence_type']);
+    var itVisu2      = _wikiField(wikitext, ['feuilles','feuille','leaf','foliage','limbe']);
+
+    // Helper : mapper du texte libre vers une valeur de <select>
+    function _mapSel(text, maps) {
+      if (!text) return '';
+      var t = text.toLowerCase();
+      for (var i = 0; i < maps.length; i++) {
+        if (maps[i][0].some(function(k){ return t.indexOf(k) !== -1; }))
+          return maps[i][1];
+      }
+      return '';
+    }
+
+    var feuillageVal  = _mapSel(itFeuillage, [
+      [['persistant','toujours vert','sempervirent','evergreen'],        'Persistant'],
+      [['caduc','décidu','deciduous','feuilles caduques'],               'Caduc'],
+      [['semi-persistant','semi-caduc','semi persistant','semi-caduc'],  'Semi-persistant'],
+      [['marcescent'],                                                    'Marcescent']
+    ]);
+    var portVal       = _mapSel(itPort, [
+      [['érigé','dressé','upright','vertical','fastigié'],   'Érigé'],
+      [['retombant','pendant','weeping','pleureur'],          'Retombant'],
+      [['étalé','spreading','horizontal','prostré plat'],    'Étalé'],
+      [['rampant','creeping','stolonifère'],                  'Rampant'],
+      [['grimpant','climbing','liane','volubile','sarmenteux'],'Grimpant'],
+      [['touffu','compact','bushy','buissonnant','dense'],    'Touffu']
+    ]);
+    var expositionVal = _mapSel(itSoleil, [
+      [['plein soleil','plein sol','full sun','très ensoleillé'],  'Plein soleil'],
+      [['mi-ombre','mi ombre','partial sun','demi-ombre','demi'],  'Mi-ombre'],
+      [['ombre partielle','light shade','légère ombre'],            'Ombre partielle'],
+      [['ombre','shade','ombragé'],                                  'Ombre complète']
+    ]);
+    var arrosageVal   = _mapSel(itEau, [
+      [['faible','peu','rare','sécheresse','sec','drought','xérophile'],  'Faible (1x par mois)'],
+      [['fréquent','abondant','important','copieux','humide','élevé'],    'Fréquent (2x par semaine)'],
+      [['modéré','normal','regular','régulier','moyenne','moyen'],         'Modéré (1x par semaine)']
+    ]);
+    var toxPetsVal    = (itToxicite && /chat|chien|animal|félin|canin|pet|toxic|poison/i.test(itToxicite)) ? 'toxic' : '';
 
     // 5. Remplir le formulaire
     var filled = [];
@@ -2568,25 +2620,42 @@ async function autoFillFromWiki(forcedTitle) {
     var region = wdRegion || itRegion;
     if (region) { _sv('formRegion', region); filled.push('Région'); }
 
-    if (itToxicite) { _sv('formToxDetail', itToxicite); filled.push('Toxicité'); }
-    if (itSoleil)   { _sv('formExposition', itSoleil); filled.push('Exposition'); }
-    if (itEau)      { _sv('formArrosage', itEau); filled.push('Arrosage'); }
-
+    // Onglet Général
     var desc = sum.extract ? sum.extract.split('\n').filter(function(l){return l.trim().length > 20;})[0] || '' : '';
     if (desc) { _sv('formBesoins', desc.substring(0, 400)); filled.push('Description'); }
+    if (itEnnemis)  { _sv('formEnnemis', itEnnemis); filled.push('Ennemis'); }
 
+    // Onglet Botanique
+    if (feuillageVal)  { _sv('formFeuillage', feuillageVal); filled.push('Feuillage'); }
+    if (portVal)       { _sv('formPort', portVal); filled.push('Port'); }
+    if (itHauteur)     { _sv('formHauteur', itHauteur); filled.push('Hauteur'); }
+    if (itCouleur)     { _sv('formCouleur', itCouleur); filled.push('Couleur'); }
+    if (itRusticite)   { _sv('formRusticite', itRusticite); filled.push('Rusticité'); }
+    if (itFloraison)   { _sv('formFlTexte', itFloraison); filled.push('Floraison'); }
+    if (toxPetsVal)    { _sv('formToxPets', toxPetsVal); }
+    if (itToxicite)    { _sv('formToxDetail', itToxicite); filled.push('Toxicité'); }
+    if (itVisu1) { _sv('formVisu1', itVisu1); filled.push('Fleurs'); }
+    if (itVisu2) { _sv('formVisu2', itVisu2); filled.push('Feuilles'); }
+    if (itPrincipes)   { _sv('formPrincipes', itPrincipes); filled.push('Principes actifs'); }
+
+    // Onglet Culture
+    if (expositionVal) { _sv('formExposition', expositionVal); filled.push('Exposition'); }
+    else if (itSoleil) { _sv('formExposition', itSoleil); filled.push('Exposition'); }
+    if (arrosageVal)   { _sv('formArrosage', arrosageVal); filled.push('Arrosage'); }
+    else if (itEau)    { _sv('formArrosage', itEau); filled.push('Arrosage'); }
+    if (itHumidite)    { _sv('formHumidite', itHumidite); filled.push('Humidité'); }
+    if (itTemperature) { _sv('formTemperature', itTemperature); filled.push('Température'); }
+    if (itEngrais)     { _sv('formEngrais', itEngrais); filled.push('Engrais'); }
+    if (itSubstrat)    { _sv('formPrincipes', itSubstrat); } // substrat textuel → notes principes si principes vide
+
+    // Image
     var img = sum.thumbnail && sum.thumbnail.source;
     if (img) { _sv('formImgUrl', img.replace(/\/\d+px-/, '/800px-')); filled.push('Image'); }
-
-    var visu1 = _wikiField(wikitext, ['fleurs','inflorescence','fleur','flower']);
-    var visu2 = _wikiField(wikitext, ['feuilles','feuille','leaf','foliage']);
-    if (visu1) { _sv('formVisu1', visu1); filled.push('Fleurs'); }
-    if (visu2) { _sv('formVisu2', visu2); filled.push('Feuilles'); }
 
     if (!filled.length) {
       setAutoFillStatus('⚠️ Plante trouvée mais peu de données disponibles.', '');
     } else {
-      setAutoFillStatus('✓ Importé : ' + filled.join(', '), 'ok');
+      setAutoFillStatus('✓ ' + filled.length + ' champs importés : ' + filled.join(', '), 'ok');
     }
     if (typeof switchFormTab === 'function') switchFormTab(0);
 
