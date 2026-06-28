@@ -2777,7 +2777,7 @@ async function autoFillFromWiki(forcedTitle) {
         var _gData = null;
         var _gLastErr = '';
         var _gBody = JSON.stringify({ contents:[{parts:[{text:_gPrompt}]}],
-          generationConfig:{temperature:0.2, maxOutputTokens:600} });
+          generationConfig:{temperature:0.2, maxOutputTokens:1500} });
         for (var _mi = 0; _mi < _gModels.length; _mi++) {
           try {
             var _gRes = await _ft(_gModels[_mi] + '?key=' + encodeURIComponent(_gKey),
@@ -2822,7 +2822,7 @@ async function autoFillFromWiki(forcedTitle) {
           setAutoFillStatus('✓ ' + _tot + ' champs importés' +
             (_gFilled.length ? ' · IA : ' + _gFilled.join(', ') : ''), 'ok');
         } else {
-          setAutoFillStatus('✓ ' + filled.length + ' champs Wikipedia · IA non parsable : « ' + _gText.substring(0, 120) + ' »', 'ok');
+          setAutoFillStatus('✓ ' + filled.length + ' champs Wikipedia · IA : réponse tronquée, réessayez.', 'ok');
         }
         } // fin else (!_gData.error)
       } catch(gErr) {
