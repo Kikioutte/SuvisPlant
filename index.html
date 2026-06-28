@@ -2460,60 +2460,65 @@ async function autoFillFromWiki(forcedTitle) {
                    pages[Object.keys(pages)[0]].pageprops &&
                    pages[Object.keys(pages)[0]].pageprops.wikibase_item;
 
-    // 3. Wikidata : entité principale
+    // 3. Wikidata : appels API ciblés (évite les gros JSON ~5 Mo qui gèlent iOS)
     var wdNomLat = '', wdFamille = '', wdRegion = '';
+    var WD = 'https://www.wikidata.org/w/api.php';
+
+    // Récupère uniquement les claims d'une entité (pas labels/sitelinks)
+    function _wdClaims(id) {
+      return _ft(WD + '?action=wbgetentities&ids=' + encodeURIComponent(id) +
+        '&props=claims&format=json&origin=*')
+        .then(function(r){return r.json();})
+        .then(function(j){return (j.entities && j.entities[id] && j.entities[id].claims) || null;})
+        .catch(function(){return null;});
+    }
+    // Récupère uniquement le label fr/en d'une entité
+    function _wdLabel(id) {
+      return _ft(WD + '?action=wbgetentities&ids=' + encodeURIComponent(id) +
+        '&props=labels&languages=fr%7Cen&format=json&origin=*')
+        .then(function(r){return r.json();})
+        .then(function(j){
+          var e = j.entities && j.entities[id];
+          return (e && e.labels && ((e.labels.fr && e.labels.fr.value) || (e.labels.en && e.labels.en.value))) || '';
+        }).catch(function(){return '';});
+    }
+
     if (wdId) {
       setAutoFillStatus('🧬 Lecture Wikidata…', '');
       try {
-        var wdRes = await _ft('https://www.wikidata.org/wiki/Special:EntityData/' + wdId + '.json');
-        var wdJson = await wdRes.json();
-        var ent = wdJson.entities && wdJson.entities[wdId];
-        if (ent) {
-          var cl = ent.claims || {};
+        var cl = await _wdClaims(wdId);
+        if (cl) {
           // P225 = nom scientifique
           if (cl.P225 && cl.P225[0]) wdNomLat = cl.P225[0].mainsnak.datavalue.value || '';
 
-          // P183 (région) + P171 (taxon parent) en PARALLÈLE
+          // P183 (région) + P171 (taxon parent) en PARALLÈLE — labels uniquement
           var regionProm = Promise.resolve('');
           var familleProm = Promise.resolve('');
 
           if (cl.P183 && cl.P183[0] && cl.P183[0].mainsnak.datavalue.value) {
             var regId = cl.P183[0].mainsnak.datavalue.value.id;
-            if (regId) regionProm = _ft('https://www.wikidata.org/wiki/Special:EntityData/' + regId + '.json')
-              .then(function(r){return r.json();})
-              .then(function(j){
-                var e = j.entities && j.entities[regId];
-                return (e && e.labels && ((e.labels.fr && e.labels.fr.value) || (e.labels.en && e.labels.en.value))) || '';
-              }).catch(function(){return '';});
+            if (regId) regionProm = _wdLabel(regId);
           }
 
           if (cl.P171 && cl.P171[0] && cl.P171[0].mainsnak.datavalue.value) {
             var parentId = cl.P171[0].mainsnak.datavalue.value.id;
-            if (parentId) familleProm = _ft('https://www.wikidata.org/wiki/Special:EntityData/' + parentId + '.json')
-              .then(function(r){return r.json();})
-              .then(function(pJson){
-                var pEnt = pJson.entities && pJson.entities[parentId];
-                if (!pEnt) return '';
-                var pCl = pEnt.claims || {};
-                var isFamily = pCl.P105 && pCl.P105[0] &&
-                  pCl.P105[0].mainsnak.datavalue.value.id === 'Q35409';
-                if (isFamily) return (pEnt.labels && ((pEnt.labels.fr && pEnt.labels.fr.value) || (pEnt.labels.en && pEnt.labels.en.value))) || '';
-                // Monter d'un niveau (genre → famille)
-                if (pCl.P171 && pCl.P171[0] && pCl.P171[0].mainsnak.datavalue.value) {
-                  var gpId = pCl.P171[0].mainsnak.datavalue.value.id;
-                  return _ft('https://www.wikidata.org/wiki/Special:EntityData/' + gpId + '.json')
-                    .then(function(r){return r.json();})
-                    .then(function(gpJson){
-                      var gpEnt = gpJson.entities && gpJson.entities[gpId];
-                      if (!gpEnt) return '';
-                      var gpCl = gpEnt.claims || {};
-                      var gpIsFamily = gpCl.P105 && gpCl.P105[0] &&
-                        gpCl.P105[0].mainsnak.datavalue.value.id === 'Q35409';
-                      return gpIsFamily ? ((gpEnt.labels && ((gpEnt.labels.fr && gpEnt.labels.fr.value) || (gpEnt.labels.en && gpEnt.labels.en.value))) || '') : '';
-                    }).catch(function(){return '';});
-                }
-                return '';
-              }).catch(function(){return '';});
+            if (parentId) familleProm = _wdClaims(parentId).then(function(pCl) {
+              if (!pCl) return '';
+              var isFamily = pCl.P105 && pCl.P105[0] &&
+                pCl.P105[0].mainsnak.datavalue.value.id === 'Q35409';
+              if (isFamily) return _wdLabel(parentId);
+              // Monter d'un niveau (genre → famille)
+              if (pCl.P171 && pCl.P171[0] && pCl.P171[0].mainsnak.datavalue.value) {
+                var gpId = pCl.P171[0].mainsnak.datavalue.value.id;
+                return _wdClaims(gpId).then(function(gpCl) {
+                  if (!gpCl) return '';
+                  var gpIsFamily = gpCl.P105 && gpCl.P105[0] &&
+                    gpCl.P105[0].mainsnak.datavalue.value.id === 'Q35409';
+                  return gpIsFamily ? _wdLabel(gpId) : '';
+                });
+              }
+              return '';
+            });
           }
 
           var wdSubs = await Promise.all([regionProm, familleProm]);
