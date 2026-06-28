@@ -559,13 +559,18 @@ body.flash-on .flashcard-overlay {
   right: -550px;
   width: 500px;
   height: 100vh;
+  height: 100dvh;
   background: var(--cream);
   border-left: 1px solid var(--glass-border);
   box-shadow: -10px 0 40px rgba(0,0,0,0.05);
   z-index: 1100;
   transition: var(--transition-smooth);
   padding: 40px;
+  padding-bottom: max(40px, env(safe-area-inset-bottom));
   overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
 }
@@ -802,6 +807,8 @@ footer {
   .side-drawer {
     width: 100%;
     right: -100%;
+    padding: 20px 16px;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
   }
 }
 
@@ -2252,11 +2259,13 @@ function openDrawer(type, plantId = null) {
   }
 
   drawer.classList.add('open');
+  document.body.style.overflow = 'hidden';
   try { lenis.stop(); } catch(e) {}
 }
 
 function closeDrawer() {
   document.getElementById('plantDrawer').classList.remove('open');
+  document.body.style.overflow = '';
   try { lenis.start(); } catch(e) {}
 }
 
