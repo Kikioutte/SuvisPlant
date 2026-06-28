@@ -2506,49 +2506,6 @@ async function autoFillFromWiki(forcedTitle) {
                    ? _pageObj.categories.map(function(c){ return c.title || ''; })
                    : [];
 
-    // Détection page de désambiguïsation → chercher lien botanique dans le wikitext
-    var _isDisambig = /\{\{homonymie|\{\{disambig|\{\{homon/i.test(wikitext) ||
-                      cats.some(function(c){ return /homonymie|disambig/i.test(c); });
-    if (_isDisambig) {
-      setAutoFillStatus('🔀 Page de désambiguïsation, recherche botanique…', '');
-      // 1. Chercher dans le wikitext une ligne mentionnant "plante/fleur/botani/genre/arbre/herbe"
-      //    et extraire le premier lien wikitext de cette ligne
-      var _botaTitle = '';
-      var _wtLines = wikitext.split('\n');
-      var _botaRe = /plante|fleur|arbuste|botani|genre|espèce|végét|herbe|arbre|rosac|liliac|orchid|astérac|apiac|lamiac/i;
-      for (var _li = 0; _li < _wtLines.length; _li++) {
-        if (_botaRe.test(_wtLines[_li])) {
-          var _lm = _wtLines[_li].match(/\[\[([^\]|#]+)/);
-          if (_lm) { _botaTitle = _lm[1].trim(); break; }
-        }
-      }
-      // 2. Fallback : recherche Wikipedia "<terme> (plante)"
-      if (!_botaTitle) {
-        var _sr2 = await _ft('https://fr.wikipedia.org/w/api.php?action=opensearch&search=' +
-          encodeURIComponent(term + ' (plante)') + '&limit=1&namespace=0&format=json&origin=*');
-        var _sd2 = await _sr2.json();
-        _botaTitle = (_sd2[1] && _sd2[1][0]) || '';
-      }
-      if (_botaTitle && _botaTitle.toLowerCase() !== title.toLowerCase()) {
-        title = _botaTitle;
-        setAutoFillStatus('📖 Lecture Wikipedia (' + title + ')…', '');
-        var _r2 = await Promise.allSettled([
-          _ft('https://fr.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title)).then(function(r){return r.json();}),
-          _ft(wikiBase + '?action=parse&page=' + encodeURIComponent(title) + '&prop=wikitext&format=json&origin=*').then(function(r){return r.json();}),
-          _ft(wikiBase + '?action=query&titles=' + encodeURIComponent(title) + '&prop=pageprops|categories&cllimit=50&format=json&origin=*').then(function(r){return r.json();})
-        ]);
-        if (_r2[0].status === 'fulfilled') sum       = _r2[0].value;
-        if (_r2[1].status === 'fulfilled') { parseData = _r2[1].value; wikitext = (parseData.parse && parseData.parse.wikitext && parseData.parse.wikitext['*']) || ''; }
-        if (_r2[2].status === 'fulfilled') {
-          propData = _r2[2].value;
-          pages = propData.query && propData.query.pages;
-          _pageObj = pages && pages[Object.keys(pages)[0]];
-          wdId = _pageObj && _pageObj.pageprops && _pageObj.pageprops.wikibase_item;
-          cats = (_pageObj && _pageObj.categories) ? _pageObj.categories.map(function(c){ return c.title || ''; }) : [];
-        }
-      }
-    }
-
     // 3. Wikidata : appels API ciblés (évite les gros JSON ~5 Mo qui gèlent iOS)
     var wdNomLat = '', wdFamille = '', wdRegion = '';
     var WD = 'https://www.wikidata.org/w/api.php';
