@@ -565,27 +565,34 @@ body.flash-on .flashcard-overlay {
   box-shadow: -10px 0 40px rgba(0,0,0,0.05);
   z-index: 1100;
   transition: var(--transition-smooth);
-  padding: 40px;
-  padding-bottom: max(40px, env(safe-area-inset-bottom));
-  overflow-y: auto;
-  overflow-x: hidden;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
+  overflow: hidden; /* le scroll est sur #plantForm, pas ici */
 }
 
 .side-drawer.open {
   right: 0;
 }
 
+/* Header collé en haut, ne scroll pas */
 .drawer-header {
+  flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 35px;
+  padding: 28px 40px 18px;
   border-bottom: 1px solid rgba(194, 162, 106, 0.15);
-  padding-bottom: 20px;
+}
+
+/* La form prend tout l'espace restant et elle scrolle */
+#plantForm {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 24px 40px max(24px, env(safe-area-inset-bottom));
 }
 
 .drawer-title {
@@ -807,9 +814,9 @@ footer {
   .side-drawer {
     width: 100%;
     right: -100%;
-    padding: 20px 16px;
-    padding-bottom: max(20px, env(safe-area-inset-bottom));
   }
+  .drawer-header { padding: 18px 16px 14px; }
+  #plantForm { padding: 16px 16px max(20px, env(safe-area-inset-bottom)); }
 }
 
 /* ══ QUIZ / RÉVISION ══ */
