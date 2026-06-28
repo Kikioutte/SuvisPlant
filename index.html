@@ -1409,6 +1409,20 @@ html:has(body.care-on),html:has(body.quiz-on),html:has(body.cal-on),html:has(bod
         </button>
       </div>
       <div id="autoFillStatus" class="autofill-status"></div>
+      <details class="gemini-key-wrap" style="margin-top:10px;">
+        <summary style="cursor:pointer;font-size:0.78rem;color:var(--sage-green);font-family:var(--primary-sans);user-select:none;">🤖 Enrichissement IA (Gemini)</summary>
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+          <input type="password" id="geminiKeyInput" class="form-control"
+            placeholder="Clé API Gemini gratuite — aistudio.google.com"
+            style="font-size:0.78rem;"
+            oninput="localStorage.setItem('herbier_gemini_key', this.value)">
+          <button type="button" class="btn-luxe" style="padding:8px 10px;flex-shrink:0;" title="Effacer la clé"
+            onclick="localStorage.removeItem('herbier_gemini_key');document.getElementById('geminiKeyInput').value='';setAutoFillStatus('Clé IA supprimée','');">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+        <p style="font-size:0.7rem;color:var(--sage-green);margin-top:5px;line-height:1.4;">Complète automatiquement : substrat précis, rempotage, mnémotechnique et tous les champs Pro fleuriste.</p>
+      </details>
     </fieldset>
 
     <!-- Onglets de navigation -->
@@ -2260,6 +2274,8 @@ function openDrawer(type, plantId = null) {
   const title = document.getElementById('drawerTitle');
   document.getElementById('plantForm').reset();
   document.getElementById('formPlantId').value = "";
+  var _gkRestore = localStorage.getItem('herbier_gemini_key');
+  if (_gkRestore) { var _gkEl = document.getElementById('geminiKeyInput'); if (_gkEl) _gkEl.value = _gkRestore; }
   switchFormTab(0);
 
   if (type === 'add') {
@@ -2447,10 +2463,10 @@ async function autoFillFromWiki(forcedTitle) {
   setAutoFillStatus('🔍 Recherche Wikipedia…', '');
 
   // Fetch avec timeout 8s — évite le gel sur iOS Safari
-  function _ft(url) {
+  function _ft(url, opts) {
     var ctrl = new AbortController();
-    var t = setTimeout(function() { ctrl.abort(); }, 8000);
-    return fetch(url, { signal: ctrl.signal }).finally(function() { clearTimeout(t); });
+    var t = setTimeout(function() { ctrl.abort(); }, 10000);
+    return fetch(url, Object.assign({ signal: ctrl.signal }, opts || {})).finally(function() { clearTimeout(t); });
   }
 
   try {
@@ -2467,16 +2483,18 @@ async function autoFillFromWiki(forcedTitle) {
     var results = await Promise.allSettled([
       _ft('https://fr.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title)).then(function(r){return r.json();}),
       _ft(wikiBase + '?action=parse&page=' + encodeURIComponent(title) + '&prop=wikitext&format=json&origin=*').then(function(r){return r.json();}),
-      _ft(wikiBase + '?action=query&titles=' + encodeURIComponent(title) + '&prop=pageprops&format=json&origin=*').then(function(r){return r.json();})
+      _ft(wikiBase + '?action=query&titles=' + encodeURIComponent(title) + '&prop=pageprops|categories&cllimit=50&format=json&origin=*').then(function(r){return r.json();})
     ]);
     var sum      = results[0].status === 'fulfilled' ? results[0].value : {};
     var parseData= results[1].status === 'fulfilled' ? results[1].value : {};
     var propData = results[2].status === 'fulfilled' ? results[2].value : {};
     var wikitext = (parseData.parse && parseData.parse.wikitext && parseData.parse.wikitext['*']) || '';
     var pages    = propData.query && propData.query.pages;
-    var wdId     = pages && pages[Object.keys(pages)[0]] &&
-                   pages[Object.keys(pages)[0]].pageprops &&
-                   pages[Object.keys(pages)[0]].pageprops.wikibase_item;
+    var _pageObj = pages && pages[Object.keys(pages)[0]];
+    var wdId     = _pageObj && _pageObj.pageprops && _pageObj.pageprops.wikibase_item;
+    var cats     = (_pageObj && _pageObj.categories)
+                   ? _pageObj.categories.map(function(c){ return c.title || ''; })
+                   : [];
 
     // 3. Wikidata : appels API ciblés (évite les gros JSON ~5 Mo qui gèlent iOS)
     var wdNomLat = '', wdFamille = '', wdRegion = '';
@@ -2605,6 +2623,59 @@ async function autoFillFromWiki(forcedTitle) {
     ]);
     var toxPetsVal    = (itToxicite && /chat|chien|animal|félin|canin|pet|toxic|poison/i.test(itToxicite)) ? 'toxic' : '';
 
+    // Inférence du type depuis les catégories Wikipedia + famille
+    function _inferType(catList, fam) {
+      var c = catList.join(' ').toLowerCase();
+      var f = (fam || '').toLowerCase();
+      if (/cactac|aizoac|crassula|sempervirum|succulent|plante grasse/i.test(f + ' ' + c)) return 'Succulente';
+      if (/aromatique|condimentaire|lamiac|labiac|apiac|plante médicinal/i.test(f + ' ' + c)) return 'Herbe aromatique';
+      if (/orchidac|orchid/i.test(f)) return "Plante d'intérieur";
+      if (/fleur coupée|floriculture|cut flower/i.test(c)) return 'Fleur coupée';
+      if (/plante.+intérieur|plante.+appartement|houseplant/i.test(c)) return "Plante d'intérieur";
+      if (/\barbre\b|arbuste|ligneux|\bshrub\b|\btree\b/i.test(c)) return 'Arbre / Arbuste';
+      if (/plante ornementale|plante de jardin|garden plant/i.test(c)) return 'Plante de jardin';
+      if (/feuillage découpé|plante à feuillage/i.test(c)) return 'Feuillage';
+      return '';
+    }
+    var typeVal = _inferType(cats, wdFamille || itFamille);
+
+    // Invasif depuis les catégories Wikipedia
+    var invasifVal = cats.some(function(c){ return /invasif|envahissant|invasive/i.test(c); });
+
+    // Rempotage : champ infobox ou snippet textuel
+    var itRempotage = _wikiField(wikitext, ['rempotage','repotting','empotage','rempotage_periode','rempotage_fréquence']);
+    if (!itRempotage) {
+      var _rIdx = wikitext.toLowerCase().indexOf('rempot');
+      if (_rIdx !== -1) {
+        itRempotage = wikitext.substring(_rIdx, _rIdx + 120)
+          .replace(/\[\[|\]\]|\{\{|\}\}|<[^>]+>/g, '').split(/[.\n]/)[0].trim();
+      }
+    }
+
+    // Substrat inféré par règles botaniques
+    function _inferSubstrat(tv, fam, reg) {
+      var f = (fam || '').toLowerCase();
+      var r = (reg || '').toLowerCase();
+      if (tv === 'Succulente' || /cactac|aizoac|crassula/i.test(f))
+        return [{m:'Sable grossier',p:40},{m:'Terreau universel',p:30},{m:'Perlite',p:30}];
+      if (/orchidac|orchid/i.test(f))
+        return [{m:'Écorce de pin',p:70},{m:'Perlite',p:20},{m:'Sphaigne',p:10}];
+      if (/polypodia|athyri|aspleniac|ptéridac/i.test(f))
+        return [{m:'Terreau universel',p:50},{m:'Humus',p:30},{m:'Perlite',p:20}];
+      if (tv === 'Herbe aromatique' && /méditerr|provenc|europe|france|afrique du nord/i.test(r))
+        return [{m:'Terreau universel',p:50},{m:'Sable grossier',p:30},{m:'Gravier',p:20}];
+      if (tv === 'Herbe aromatique')
+        return [{m:'Terreau universel',p:60},{m:'Perlite',p:25},{m:'Humus',p:15}];
+      if (tv === 'Arbre / Arbuste')
+        return [{m:'Terreau universel',p:60},{m:'Compost',p:25},{m:'Sable grossier',p:15}];
+      if (tv === "Plante d'intérieur")
+        return [{m:'Terreau universel',p:60},{m:'Perlite',p:25},{m:'Humus',p:15}];
+      if (tv === 'Plante de jardin')
+        return [{m:'Terreau universel',p:65},{m:'Compost',p:25},{m:'Sable grossier',p:10}];
+      return [];
+    }
+    var substratInfere = _inferSubstrat(typeVal, wdFamille || itFamille, wdRegion || itRegion);
+
     // 5. Remplir le formulaire
     var filled = [];
 
@@ -2646,7 +2717,13 @@ async function autoFillFromWiki(forcedTitle) {
     if (itHumidite)    { _sv('formHumidite', itHumidite); filled.push('Humidité'); }
     if (itTemperature) { _sv('formTemperature', itTemperature); filled.push('Température'); }
     if (itEngrais)     { _sv('formEngrais', itEngrais); filled.push('Engrais'); }
-    if (itSubstrat)    { _sv('formPrincipes', itSubstrat); } // substrat textuel → notes principes si principes vide
+    if (itSubstrat && !_gv('formPrincipes')) { _sv('formPrincipes', itSubstrat); }
+
+    // Catégorie, invasif, rempotage, substrat inférés
+    if (typeVal)     { _sv('formType', typeVal); filled.push('Catégorie'); }
+    if (invasifVal)  { _sc('formInvasive', true); filled.push('Invasif'); }
+    if (itRempotage) { _sv('formRempotage', itRempotage); filled.push('Rempotage'); }
+    if (substratInfere.length) { renderSubstratRows(substratInfere); filled.push('Substrat'); }
 
     // Image
     var img = sum.thumbnail && sum.thumbnail.source;
@@ -2658,6 +2735,68 @@ async function autoFillFromWiki(forcedTitle) {
       setAutoFillStatus('✓ ' + filled.length + ' champs importés : ' + filled.join(', '), 'ok');
     }
     if (typeof switchFormTab === 'function') switchFormTab(0);
+
+    // Enrichissement Gemini Flash si clé disponible
+    var _gKey = localStorage.getItem('herbier_gemini_key');
+    if (_gKey) {
+      setAutoFillStatus('🤖 Enrichissement IA en cours…', '');
+      try {
+        var _gPrompt = 'Tu es un expert botaniste et fleuriste professionnel. Voici une plante :\n'
+          + '- Nom usuel : ' + _gv('formNomFr') + '\n'
+          + '- Nom latin : '  + _gv('formNomLat') + '\n'
+          + '- Famille : '    + _gv('formFamille') + '\n'
+          + '- Catégorie : '  + _gv('formType') + '\n'
+          + '- Région : '     + _gv('formRegion') + '\n'
+          + '- Description : '+ _gv('formBesoins').substring(0, 300) + '\n\n'
+          + 'Réponds UNIQUEMENT avec un objet JSON valide (sans markdown, sans texte avant/après), '
+          + 'avec ces clés si tu les connais (omet celles inconnues) :\n'
+          + '{"rempotage":"conseil bref","mnemonic":"astuce mnémotechnique courte",'
+          + '"substrat":[{"m":"matériau en français","p":pourcentage_entier}],'
+          + '"prepa":"préparation pro avant mise en vase",'
+          + '"tempIdeale":"ex: 4–8°C","tenueVase":"ex: 7–10 jours",'
+          + '"conservation":"conseil conservation fleuriste",'
+          + '"stockage":"conditions stockage idéales",'
+          + '"precautions":"éthylène, courants d\'air, etc."}';
+
+        var _gRes  = await _ft(
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=' + encodeURIComponent(_gKey),
+          { method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ contents:[{parts:[{text:_gPrompt}]}],
+              generationConfig:{temperature:0.2, maxOutputTokens:600} }) }
+        );
+        var _gData = await _gRes.json();
+        var _gText = (_gData.candidates && _gData.candidates[0] &&
+          _gData.candidates[0].content && _gData.candidates[0].content.parts &&
+          _gData.candidates[0].content.parts[0] && _gData.candidates[0].content.parts[0].text) || '';
+        var _gJson = null;
+        try { var _gM = _gText.match(/\{[\s\S]*\}/); if (_gM) _gJson = JSON.parse(_gM[0]); }
+        catch(e2) { /* JSON malformé */ }
+
+        if (_gJson) {
+          var _gFilled = [];
+          if (_gJson.rempotage)                         { _sv('formRempotage',   _gJson.rempotage);    _gFilled.push('Rempotage'); }
+          if (_gJson.mnemonic)                          { _sv('formMnemonic',    _gJson.mnemonic);     _gFilled.push('Mnémo'); }
+          if (_gJson.prepa)                             { _sv('formPrepa',       _gJson.prepa);        _gFilled.push('Prépa'); }
+          if (_gJson.tempIdeale)                        { _sv('formTempIdeale',  _gJson.tempIdeale);   _gFilled.push('Temp'); }
+          if (_gJson.tenueVase)                         { _sv('formTenueVase',   _gJson.tenueVase);    _gFilled.push('Tenue vase'); }
+          if (_gJson.conservation)                      { _sv('formConservation',_gJson.conservation); _gFilled.push('Conservation'); }
+          if (_gJson.stockage)                          { _sv('formStockage',    _gJson.stockage);     _gFilled.push('Stockage'); }
+          if (_gJson.precautions)                       { _sv('formPrecautions', _gJson.precautions);  _gFilled.push('Précautions'); }
+          if (Array.isArray(_gJson.substrat) && _gJson.substrat.length) {
+            renderSubstratRows(_gJson.substrat); _gFilled.push('Substrat IA');
+          }
+          var _tot = filled.length + _gFilled.length;
+          setAutoFillStatus('✓ ' + _tot + ' champs importés' +
+            (_gFilled.length ? ' · IA : ' + _gFilled.join(', ') : ''), 'ok');
+        } else {
+          setAutoFillStatus('✓ ' + filled.length + ' champs Wikipedia · IA : réponse non parsable.', 'ok');
+        }
+      } catch(gErr) {
+        console.warn('Gemini error', gErr);
+        var _gErrMsg = gErr && gErr.name === 'AbortError' ? 'délai dépassé' : 'erreur réseau';
+        setAutoFillStatus('✓ ' + filled.length + ' champs Wikipedia · IA indisponible (' + _gErrMsg + ').', 'ok');
+      }
+    }
 
   } catch(err) {
     console.warn('autoFill error', err);
