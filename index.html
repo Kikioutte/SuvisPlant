@@ -2768,18 +2768,32 @@ async function autoFillFromWiki(forcedTitle) {
           + '"stockage":"conditions stockage idéales",'
           + '"precautions":"éthylène, courants d\'air, etc."}';
 
-        var _gRes  = await _ft(
-          'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=' + encodeURIComponent(_gKey),
-          { method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({ contents:[{parts:[{text:_gPrompt}]}],
-              generationConfig:{temperature:0.2, maxOutputTokens:600} }) }
-        );
-        var _gData = await _gRes.json();
+        // Essai en cascade sur plusieurs modèles (disponibilité variable selon la clé/région)
+        var _gModels = [
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent'
+        ];
+        var _gData = null;
+        var _gLastErr = '';
+        var _gBody = JSON.stringify({ contents:[{parts:[{text:_gPrompt}]}],
+          generationConfig:{temperature:0.2, maxOutputTokens:600} });
+        for (var _mi = 0; _mi < _gModels.length; _mi++) {
+          try {
+            var _gRes = await _ft(_gModels[_mi] + '?key=' + encodeURIComponent(_gKey),
+              { method:'POST', headers:{'Content-Type':'application/json'}, body: _gBody });
+            var _gTry = await _gRes.json();
+            if (_gTry.error && /not found|not supported/i.test(_gTry.error.message || '')) {
+              _gLastErr = _gTry.error.message; continue; // modèle indisponible → essai suivant
+            }
+            _gData = _gTry; break;
+          } catch(e3) { _gLastErr = e3.message || 'erreur réseau'; }
+        }
 
         // Erreur API explicite (clé invalide, quota, etc.)
-        if (_gData.error) {
-          var _gApiErr = _gData.error.message || _gData.error.status || 'erreur inconnue';
-          console.warn('Gemini API error:', _gData.error);
+        if (!_gData || _gData.error) {
+          var _gApiErr = (_gData && _gData.error && (_gData.error.message || _gData.error.status)) || _gLastErr || 'erreur inconnue';
+          console.warn('Gemini API error:', _gApiErr);
           setAutoFillStatus('✓ ' + filled.length + ' champs Wikipedia · IA erreur : ' + _gApiErr, 'ok');
         } else {
 
