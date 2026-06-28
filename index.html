@@ -66,6 +66,8 @@
 }
 
 html { overflow-x: hidden; max-width: 100vw; }
+/* Bloque le scroll body quand drawer ou menu mobile est ouvert */
+body.no-scroll { overflow: hidden; touch-action: none; }
 body {
   background-color: var(--bg-sand);
   color: var(--ink-deep);
@@ -1381,7 +1383,7 @@ html:has(body.care-on),html:has(body.quiz-on),html:has(body.cal-on),html:has(bod
 </div>
 
 <!-- LE TIROIR DE CONCIERGERIE (Ajout / Édition de Plante) -->
-<div class="side-drawer" id="plantDrawer">
+<div class="side-drawer" id="plantDrawer" data-lenis-prevent>
   <div class="drawer-header">
     <h3 class="drawer-title" id="drawerTitle">Inscrire une plante</h3>
     <button class="close-drawer" aria-label="Fermer" onclick="closeDrawer()"><i class="fa-solid fa-xmark"></i></button>
@@ -2266,13 +2268,13 @@ function openDrawer(type, plantId = null) {
   }
 
   drawer.classList.add('open');
-  document.body.style.overflow = 'hidden';
+  document.body.classList.add('no-scroll');
   try { lenis.stop(); } catch(e) {}
 }
 
 function closeDrawer() {
   document.getElementById('plantDrawer').classList.remove('open');
-  document.body.style.overflow = '';
+  document.body.classList.remove('no-scroll');
   try { lenis.start(); } catch(e) {}
 }
 
@@ -3120,7 +3122,7 @@ function initV6Enhancements(){
 
 <!-- ════ Menu burger mobile (<=768px) — additif, n'altere pas le DOM existant ════ -->
 <button class="burger-btn" id="burgerBtn" aria-label="Ouvrir le menu de navigation" aria-expanded="false" aria-controls="mobileNav" onclick="toggleMobileNav()"><i class="fa-solid fa-bars" aria-hidden="true"></i></button>
-<nav class="mobile-nav" id="mobileNav" aria-label="Navigation mobile" aria-hidden="true" onclick="if(event.target===this)closeMobileNav()">
+<nav class="mobile-nav" id="mobileNav" aria-label="Navigation mobile" aria-hidden="true" data-lenis-prevent onclick="if(event.target===this)closeMobileNav()">
   <button class="mnav-close" aria-label="Fermer le menu" onclick="closeMobileNav()"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
   <div class="mnav-head"><h2>Navigation</h2><p>L'Herbier de vie</p></div>
   <button class="mnav-btn mnav-learn" onclick="closeMobileNav();setMode('learn')"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i> Apprentissage</button>
@@ -3139,10 +3141,14 @@ function initV6Enhancements(){
 function openMobileNav(){
   var m=document.getElementById('mobileNav'); if(m){ m.classList.add('open'); m.setAttribute('aria-hidden','false'); }
   var b=document.getElementById('burgerBtn'); if(b) b.setAttribute('aria-expanded','true');
+  document.body.classList.add('no-scroll');
+  try { lenis.stop(); } catch(e) {}
 }
 function closeMobileNav(){
   var m=document.getElementById('mobileNav'); if(m){ m.classList.remove('open'); m.setAttribute('aria-hidden','true'); }
   var b=document.getElementById('burgerBtn'); if(b) b.setAttribute('aria-expanded','false');
+  document.body.classList.remove('no-scroll');
+  try { lenis.start(); } catch(e) {}
 }
 function toggleMobileNav(){
   var m=document.getElementById('mobileNav');
