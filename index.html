@@ -2803,6 +2803,7 @@ async function autoFillFromWiki(forcedTitle) {
         var _gJson = null;
         try { var _gM = _gText.match(/\{[\s\S]*\}/); if (_gM) _gJson = JSON.parse(_gM[0]); }
         catch(e2) { console.warn('Gemini JSON parse error:', _gText); }
+        if (!_gJson) console.warn('Gemini raw text:', _gText.substring(0, 500));
 
         if (_gJson) {
           var _gFilled = [];
@@ -2821,7 +2822,7 @@ async function autoFillFromWiki(forcedTitle) {
           setAutoFillStatus('✓ ' + _tot + ' champs importés' +
             (_gFilled.length ? ' · IA : ' + _gFilled.join(', ') : ''), 'ok');
         } else {
-          setAutoFillStatus('✓ ' + filled.length + ' champs Wikipedia · IA : réponse non parsable.', 'ok');
+          setAutoFillStatus('✓ ' + filled.length + ' champs Wikipedia · IA non parsable : « ' + _gText.substring(0, 120) + ' »', 'ok');
         }
         } // fin else (!_gData.error)
       } catch(gErr) {
