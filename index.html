@@ -1409,20 +1409,19 @@ html:has(body.care-on),html:has(body.quiz-on),html:has(body.cal-on),html:has(bod
         </button>
       </div>
       <div id="autoFillStatus" class="autofill-status"></div>
-      <details class="gemini-key-wrap" style="margin-top:10px;">
-        <summary style="cursor:pointer;font-size:0.78rem;color:var(--sage-green);font-family:var(--primary-sans);user-select:none;">🤖 Enrichissement IA (Gemini)</summary>
-        <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+      <div style="margin-top:10px;border-top:1px dashed rgba(194,162,106,0.3);padding-top:10px;">
+        <label style="font-size:0.72rem;color:var(--gold);font-family:var(--primary-sans);font-weight:600;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px;">🤖 Enrichissement IA — clé Gemini (optionnelle)</label>
+        <div style="display:flex;gap:8px;align-items:center;">
           <input type="password" id="geminiKeyInput" class="form-control"
-            placeholder="Clé API Gemini gratuite — aistudio.google.com"
-            style="font-size:0.78rem;"
+            placeholder="Clé gratuite sur aistudio.google.com"
+            style="font-size:0.8rem;"
             oninput="localStorage.setItem('herbier_gemini_key', this.value)">
           <button type="button" class="btn-luxe" style="padding:8px 10px;flex-shrink:0;" title="Effacer la clé"
             onclick="localStorage.removeItem('herbier_gemini_key');document.getElementById('geminiKeyInput').value='';setAutoFillStatus('Clé IA supprimée','');">
             <i class="fa-solid fa-trash-can"></i>
           </button>
         </div>
-        <p style="font-size:0.7rem;color:var(--sage-green);margin-top:5px;line-height:1.4;">Complète automatiquement : substrat précis, rempotage, mnémotechnique et tous les champs Pro fleuriste.</p>
-      </details>
+      </div>
     </fieldset>
 
     <!-- Onglets de navigation -->
