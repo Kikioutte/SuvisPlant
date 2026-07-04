@@ -4494,11 +4494,28 @@ body.theme-dark .v8-leit .lv{background:rgba(125,142,116,.2);}
     window.scrollTo({top:y,behavior:'smooth'});
   }
   function closePanels(){
-    if(document.body.classList.contains('flash-on')&&typeof window.toggleFlashMode==='function')try{window.toggleFlashMode();}catch(e){}
-    if(document.body.classList.contains('quiz-on')&&typeof window.toggleQuizMode==='function')try{window.toggleQuizMode();}catch(e){}
-    if(document.body.classList.contains('cal-on')&&typeof window.toggleCalMode==='function')try{window.toggleCalMode();}catch(e){}
-    if(document.body.classList.contains('dash-on')&&typeof window.toggleDashMode==='function')try{window.toggleDashMode();}catch(e){}
-    if(document.body.classList.contains('care-on')&&typeof window.toggleCareMode==='function')try{window.toggleCareMode();}catch(e){}
+    closeQuickSheet();
+    if(typeof window.closeDrawer==='function')try{window.closeDrawer();}catch(e){}
+    if(typeof window.closeModal==='function')try{window.closeModal();}catch(e){}
+    if(typeof window.closeMobileNav==='function')try{window.closeMobileNav();}catch(e){}
+    if(typeof window.closeImgZoom==='function')try{window.closeImgZoom();}catch(e){}
+    ['flash-on','quiz-on','cal-on','dash-on','care-on'].forEach(function(c){document.body.classList.remove(c);});
+    [
+      ['flashcardSection','flashBtn'],
+      ['quizSection','quizBtn'],
+      ['calSection','calBtn'],
+      ['dashSection','dashBtn'],
+      ['careSection','careBtn']
+    ].forEach(function(pair){
+      var sec=$(pair[0]);if(sec)sec.style.display='none';
+      var btn=$(pair[1]);if(btn)btn.classList.remove('active');
+    });
+    try{flashMode=false;}catch(e){}
+    try{quizOn=false;}catch(e){}
+    try{calOn=false;}catch(e){}
+    try{dashOn=false;}catch(e){}
+    try{careOn=false;}catch(e){}
+    try{if(window.lenis&&typeof window.lenis.start==='function')window.lenis.start();}catch(e){}
   }
   function enhanceCatalogCards(){
     all('#plantCatalog .plant-actions').forEach(function(actions){
