@@ -1381,7 +1381,7 @@ body.theme-dark .fusion-sheet-item{background:rgba(31,40,35,.7)}
   .fusion-panels{grid-template-columns:1fr}
 }
 @media(max-width:760px){
-  body{padding-bottom:88px}
+  body{padding-bottom:calc(108px + env(safe-area-inset-bottom))}
   header#mainHeader .nav-actions{display:none !important}
   header#mainHeader{gap:8px}
   .fusion-hub{margin:-28px auto 24px;padding:0 14px}
@@ -1399,6 +1399,8 @@ body.theme-dark .fusion-sheet-item{background:rgba(31,40,35,.7)}
   .fusion-mobile-dock button{flex:1;border:0;background:transparent;color:var(--sage-green);font-family:var(--primary-sans);font-size:.62rem;font-weight:700;letter-spacing:.2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;padding:6px 2px;border-radius:12px;cursor:pointer}
   .fusion-mobile-dock button i{font-size:1.05rem}
   .fusion-mobile-dock button.active,.fusion-mobile-dock button:focus-visible{color:var(--ink-deep);background:rgba(125,142,116,.13);outline:none}
+  .side-drawer.open #plantForm{padding-bottom:calc(128px + env(safe-area-inset-bottom)) !important;scroll-padding-bottom:calc(128px + env(safe-area-inset-bottom))}
+  .drawer-submit{min-height:58px;margin:20px 0 0 !important;padding:15px 12px !important}
   .v7-cmpbar{bottom:calc(86px + env(safe-area-inset-bottom)) !important}
   #toast{bottom:calc(96px + env(safe-area-inset-bottom)) !important}
   body.theme-dark .fusion-mobile-dock{background:rgba(31,40,35,.94)}
@@ -1828,7 +1830,7 @@ body.theme-dark .fusion-sheet-item{background:rgba(31,40,35,.7)}
       </fieldset>
     </div>
 
-    <button type="submit" class="btn-luxe btn-luxe-accent" style="width:100%;justify-content:center;margin-top:20px;padding:15px;">
+    <button type="submit" class="btn-luxe btn-luxe-accent drawer-submit" style="width:100%;justify-content:center;margin-top:20px;padding:15px;">
       Enregistrer dans mon registre
     </button>
   </form>
