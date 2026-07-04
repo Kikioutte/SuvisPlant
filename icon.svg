@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="L'Herbier de Vie">
+  <rect width="512" height="512" rx="112" fill="#1f2d24"/>
+  <circle cx="256" cy="256" r="190" fill="#faf7f2" opacity=".08"/>
+  <path d="M262 408c-29-58-34-119-16-182 16-55 48-98 95-129 16 53 12 108-10 161-20 48-53 87-69 150Z" fill="#c2a26a"/>
+  <path d="M246 407c-57-30-94-74-110-132-16-58-6-114 30-168 50 35 82 82 96 139 13 53 7 105-16 161Z" fill="#7d8e74"/>
+  <path d="M254 411c1-101 17-193 73-285" fill="none" stroke="#faf7f2" stroke-width="18" stroke-linecap="round" opacity=".86"/>
+  <path d="M246 407c-9-89-34-163-86-231" fill="none" stroke="#faf7f2" stroke-width="16" stroke-linecap="round" opacity=".72"/>
+  <path d="M185 364h142" stroke="#c2a26a" stroke-width="18" stroke-linecap="round"/>
+</svg>

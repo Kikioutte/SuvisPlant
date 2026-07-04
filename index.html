@@ -9,8 +9,9 @@
 <meta name="description" content="L'Herbier de Vie : carnet de botanique premium. Explorez plus de 300 plantes avec fiches détaillées (familles, besoins, toxicité), flashcards, quiz, calendrier de floraison et conseils de soin.">
 <meta name="author" content="L'Herbier de Vie">
 <meta name="theme-color" content="#1F2D24">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
 <!-- Favicon : feuille en SVG inline (aucune dépendance externe) -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%BF%3C/text%3E%3C/svg%3E">
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:locale" content="fr_FR">
@@ -1316,6 +1317,99 @@ html:has(body.care-on),html:has(body.quiz-on),html:has(body.cal-on),html:has(bod
 @media(max-width:600px){.care-tips{grid-template-columns:1fr}.care-head h2{font-size:2rem}}
 @media(max-width:768px){.care-overlay{top:128px;height:calc(100dvh - 128px)}}
 </style>
+<style id="fusion-mobile-app">
+/* Fusion prototype mobile : hub modulaire + navigation d'application */
+.fusion-hub{max-width:1240px;margin:-54px auto 42px;padding:0 22px;position:relative;z-index:12}
+.fusion-hub-shell{background:rgba(250,247,242,.92);border:1px solid var(--glass-border);border-radius:18px;box-shadow:var(--shadow-premium);backdrop-filter:blur(18px) saturate(145%);-webkit-backdrop-filter:blur(18px) saturate(145%);padding:20px}
+.fusion-hub-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:16px}
+.fusion-kicker{font-family:var(--primary-sans);font-size:.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700}
+.fusion-hub-title{font-family:var(--primary-serif);font-size:2rem;line-height:1.05;color:var(--ink-deep);margin-top:4px}
+.fusion-hub-copy{font-family:var(--primary-serif);font-style:italic;color:var(--sage-green);font-size:.98rem;max-width:48ch}
+.fusion-stats{display:grid;grid-template-columns:repeat(4,minmax(90px,1fr));gap:10px;min-width:380px}
+.fusion-stat{background:var(--cream);border:1px solid var(--glass-border);border-radius:12px;padding:12px 14px;text-align:center}
+.fusion-stat b{display:block;font-family:var(--primary-serif);font-size:1.45rem;color:var(--ink-deep);line-height:1}
+.fusion-stat span{display:block;margin-top:4px;font-family:var(--primary-sans);font-size:.62rem;letter-spacing:1px;text-transform:uppercase;color:var(--sage-green)}
+.fusion-modules{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.fusion-module{min-height:118px;border:1px solid var(--glass-border);border-radius:14px;background:var(--cream);color:var(--ink-deep);padding:14px 12px;text-align:left;cursor:pointer;box-shadow:0 8px 22px rgba(31,45,36,.08);transition:transform .35s var(--ease-apple),border-color .35s var(--ease-apple),background .35s var(--ease-apple);display:flex;flex-direction:column;justify-content:space-between;gap:10px}
+.fusion-module:hover{transform:translateY(-3px);border-color:var(--gold);background:#fff}
+.fusion-module i{width:38px;height:38px;border-radius:12px;background:rgba(125,142,116,.14);display:flex;align-items:center;justify-content:center;color:var(--sage-green);font-size:1.05rem}
+.fusion-module b{display:block;font-family:var(--primary-serif);font-size:1.05rem;line-height:1.05}
+.fusion-module span{display:block;margin-top:4px;font-family:var(--primary-sans);font-size:.72rem;line-height:1.35;color:var(--sage-green)}
+.fusion-module.accent{background:linear-gradient(145deg,var(--ink-deep),#35583e);color:var(--bg-sand);border-color:rgba(255,255,255,.12)}
+.fusion-module.accent i{background:rgba(255,255,255,.13);color:var(--gold)}
+.fusion-module.accent span{color:rgba(250,247,242,.74)}
+.fusion-panels{display:grid;grid-template-columns:1.05fr .95fr;gap:12px;margin-top:14px}
+.fusion-panel{background:var(--cream);border:1px solid var(--glass-border);border-radius:14px;padding:16px;min-height:142px}
+.fusion-panel h3{font-family:var(--primary-serif);font-size:1.25rem;color:var(--ink-deep);margin:0 0 10px}
+.fusion-panel-list{display:grid;gap:8px}
+.fusion-panel-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid rgba(125,142,116,.18);border-radius:10px;padding:9px 10px;font-family:var(--primary-sans);font-size:.82rem;color:var(--ink-deep)}
+.fusion-panel-row b{font-family:var(--primary-serif);font-size:.98rem}
+.fusion-panel-row small{display:block;color:var(--sage-green);font-size:.68rem;margin-top:2px}
+.fusion-panel-row .pill{font-size:.65rem;letter-spacing:.6px;text-transform:uppercase;color:var(--terracotta);background:rgba(195,106,75,.1);border-radius:999px;padding:4px 8px;white-space:nowrap}
+.fusion-empty{font-family:var(--primary-serif);font-style:italic;color:var(--sage-green);font-size:.9rem;line-height:1.5;padding:8px 0}
+.fusion-sheet-backdrop{position:fixed;inset:0;background:rgba(23,30,25,.44);opacity:0;pointer-events:none;transition:opacity .28s ease;z-index:4200}
+.fusion-sheet-backdrop.open{opacity:1;pointer-events:auto}
+.fusion-quick-sheet{position:fixed;left:50%;bottom:0;width:min(720px,100%);max-height:88dvh;transform:translate(-50%,105%);z-index:4210;background:var(--cream);border:1px solid var(--glass-border);border-bottom:0;border-radius:24px 24px 0 0;box-shadow:0 -18px 48px rgba(31,45,36,.28);transition:transform .38s cubic-bezier(.16,1,.3,1);overflow:hidden;display:flex;flex-direction:column}
+.fusion-quick-sheet.open{transform:translate(-50%,0)}
+.fusion-sheet-handle{width:44px;height:5px;border-radius:999px;background:rgba(125,142,116,.32);margin:12px auto 6px;flex:0 0 auto}
+.fusion-sheet-body{padding:8px 20px 24px;overflow:auto}
+.fusion-sheet-hero{display:grid;grid-template-columns:92px 1fr;gap:14px;align-items:center;margin-bottom:14px}
+.fusion-sheet-img{width:92px;height:92px;border-radius:18px;background:var(--bg-sand-dark) center/cover no-repeat;display:flex;align-items:center;justify-content:center;color:var(--sage-green);font-size:1.6rem;border:1px solid var(--glass-border)}
+.fusion-sheet-title h2{font-family:var(--primary-serif);font-size:1.6rem;line-height:1.05;color:var(--ink-deep);margin:0}
+.fusion-sheet-title em{font-family:var(--primary-sans);font-size:.82rem;color:var(--sage-green)}
+.fusion-sheet-title span{display:inline-block;margin-top:7px;background:rgba(194,162,106,.14);color:var(--gold);border-radius:999px;padding:4px 9px;font-family:var(--primary-sans);font-size:.68rem;text-transform:uppercase;letter-spacing:.8px}
+.fusion-sheet-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.fusion-sheet-item{background:var(--bg-sand);border:1px solid var(--glass-border);border-radius:12px;padding:10px}
+.fusion-sheet-item b{display:block;font-family:var(--primary-sans);font-size:.62rem;letter-spacing:1px;text-transform:uppercase;color:var(--sage-green);margin-bottom:4px}
+.fusion-sheet-item span{font-family:var(--primary-serif);font-size:.95rem;color:var(--ink-deep);line-height:1.25}
+.fusion-sheet-note{font-family:var(--primary-serif);font-size:.95rem;line-height:1.55;color:var(--ink-deep);background:rgba(125,142,116,.1);border-radius:12px;padding:12px 14px;margin:10px 0}
+.fusion-sheet-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.fusion-sheet-actions .btn-luxe{padding:9px 13px;font-size:.72rem}
+.fusion-sheet-close{position:absolute;top:12px;right:14px;width:36px;height:36px;border-radius:50%;border:1px solid var(--glass-border);background:var(--cream);color:var(--ink-deep);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.fusion-quick-btn{border-color:rgba(125,142,116,.36) !important}
+.fusion-mobile-dock{display:none}
+body.theme-dark .fusion-hub-shell{background:rgba(31,40,35,.88)}
+body.theme-dark .fusion-module,body.theme-dark .fusion-stat{background:rgba(36,48,41,.86)}
+body.theme-dark .fusion-module:hover{background:rgba(43,58,49,.95)}
+body.theme-dark .fusion-panel,body.theme-dark .fusion-quick-sheet,body.theme-dark .fusion-sheet-close{background:rgba(36,48,41,.96)}
+body.theme-dark .fusion-sheet-item{background:rgba(31,40,35,.7)}
+@media(max-width:1080px){
+  .fusion-hub{margin:-34px auto 34px}
+  .fusion-hub-head{align-items:stretch;flex-direction:column}
+  .fusion-stats{min-width:0}
+  .fusion-modules{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .fusion-panels{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+  body{padding-bottom:88px}
+  header#mainHeader .nav-actions{display:none !important}
+  header#mainHeader{gap:8px}
+  .fusion-hub{margin:-28px auto 24px;padding:0 14px}
+  .fusion-hub-shell{border-radius:16px;padding:16px}
+  .fusion-hub-title{font-size:1.55rem}
+  .fusion-hub-copy{font-size:.9rem}
+  .fusion-stats{grid-template-columns:repeat(2,1fr)}
+  .fusion-modules{grid-template-columns:repeat(2,1fr);gap:9px}
+  .fusion-panels{gap:9px}
+  .fusion-panel{padding:14px;min-height:0}
+  .fusion-module{min-height:104px;padding:12px}
+  .fusion-module b{font-size:.98rem}
+  .fusion-module span{font-size:.68rem}
+  .fusion-mobile-dock{position:fixed;left:0;right:0;bottom:0;height:76px;padding:7px 8px calc(8px + env(safe-area-inset-bottom));display:flex;align-items:flex-start;gap:4px;background:rgba(250,247,242,.94);border-top:1px solid var(--glass-border);backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);z-index:3800;box-shadow:0 -14px 30px rgba(31,45,36,.12)}
+  .fusion-mobile-dock button{flex:1;border:0;background:transparent;color:var(--sage-green);font-family:var(--primary-sans);font-size:.62rem;font-weight:700;letter-spacing:.2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;padding:6px 2px;border-radius:12px;cursor:pointer}
+  .fusion-mobile-dock button i{font-size:1.05rem}
+  .fusion-mobile-dock button.active,.fusion-mobile-dock button:focus-visible{color:var(--ink-deep);background:rgba(125,142,116,.13);outline:none}
+  .v7-cmpbar{bottom:calc(86px + env(safe-area-inset-bottom)) !important}
+  #toast{bottom:calc(96px + env(safe-area-inset-bottom)) !important}
+  body.theme-dark .fusion-mobile-dock{background:rgba(31,40,35,.94)}
+}
+@media(max-width:520px){
+  .fusion-sheet-grid{grid-template-columns:1fr}
+  .fusion-sheet-hero{grid-template-columns:76px 1fr}
+  .fusion-sheet-img{width:76px;height:76px;border-radius:16px}
+  .fusion-sheet-title h2{font-size:1.34rem}
+}
+</style>
 </head>
 <body>
 <a class="skip-link" href="#plantCatalog">Aller au contenu</a>
@@ -1359,6 +1453,73 @@ html:has(body.care-on),html:has(body.quiz-on),html:has(body.cal-on),html:has(bod
   <div class="scroll-indicator">
     <span>Faites défiler</span>
     <i class="fa-solid fa-chevron-down"></i>
+  </div>
+</section>
+
+<!-- HUB MODULAIRE : fusion du prototype mobile avec le site complet -->
+<section class="fusion-hub" id="fusionHub" aria-label="Espaces de l'Herbier de Vie">
+  <div class="fusion-hub-shell">
+    <div class="fusion-hub-head">
+      <div>
+        <div class="fusion-kicker">Compagnon botanique</div>
+        <h2 class="fusion-hub-title">Un herbier riche, une navigation de poche</h2>
+        <p class="fusion-hub-copy">Retrouvez les grands espaces du prototype mobile, reliés aux fiches, quiz, soins et statistiques déjà présents.</p>
+      </div>
+      <div class="fusion-stats" aria-label="Statistiques rapides">
+        <div class="fusion-stat"><b id="fusionTotal">0</b><span>espèces</span></div>
+        <div class="fusion-stat"><b id="fusionGarden">0</b><span>jardin</span></div>
+        <div class="fusion-stat"><b id="fusionFamilies">0</b><span>familles</span></div>
+        <div class="fusion-stat"><b id="fusionBloom">0</b><span>ce mois</span></div>
+      </div>
+    </div>
+    <div class="fusion-modules">
+      <button class="fusion-module accent" type="button" data-fusion-action="catalog">
+        <i class="fa-solid fa-leaf"></i>
+        <span><b>Mon Herbier</b><span>Explorer toute la collection</span></span>
+      </button>
+      <button class="fusion-module" type="button" data-fusion-action="garden">
+        <i class="fa-solid fa-seedling"></i>
+        <span><b>Mon Jardin</b><span>Vos plantes adoptées</span></span>
+      </button>
+      <button class="fusion-module" type="button" data-fusion-action="add">
+        <i class="fa-solid fa-circle-plus"></i>
+        <span><b>Inscrire</b><span>Nouvelle fiche guidée</span></span>
+      </button>
+      <button class="fusion-module" type="button" data-fusion-action="flash">
+        <i class="fa-solid fa-brain"></i>
+        <span><b>Mémoire</b><span>Cartes à retourner</span></span>
+      </button>
+      <button class="fusion-module" type="button" data-fusion-action="quiz">
+        <i class="fa-solid fa-trophy"></i>
+        <span><b>Révision</b><span>Quiz par nom, famille, photo</span></span>
+      </button>
+      <button class="fusion-module" type="button" data-fusion-action="calendar">
+        <i class="fa-solid fa-calendar-days"></i>
+        <span><b>Floraisons</b><span>Mois par mois</span></span>
+      </button>
+      <button class="fusion-module" type="button" data-fusion-action="dash">
+        <i class="fa-solid fa-chart-pie"></i>
+        <span><b>Tableau de Bord</b><span>Votre herbier en chiffres</span></span>
+      </button>
+      <button class="fusion-module" type="button" data-fusion-action="care">
+        <i class="fa-solid fa-hand-holding-droplet"></i>
+        <span><b>Soins</b><span>Conservation et routines</span></span>
+      </button>
+    </div>
+    <div class="fusion-panels" aria-label="Suivi quotidien">
+      <section class="fusion-panel">
+        <h3>Mon Jardin aujourd'hui</h3>
+        <div class="fusion-panel-list" id="fusionGardenPanel">
+          <div class="fusion-empty">Les rappels et plantes à surveiller apparaîtront ici.</div>
+        </div>
+      </section>
+      <section class="fusion-panel">
+        <h3>Révision intelligente</h3>
+        <div class="fusion-panel-list" id="fusionLearningPanel">
+          <div class="fusion-empty">Les cartes à revoir et familles fragiles apparaîtront ici.</div>
+        </div>
+      </section>
+    </div>
   </div>
 </section>
 
@@ -1687,6 +1848,23 @@ html:has(body.care-on),html:has(body.quiz-on),html:has(body.cal-on),html:has(bod
 
 <!-- BANDEAU TOAST -->
 <div id="toast">Fiche mise à jour avec succès</div>
+
+<!-- FICHE EXPRESS MOBILE / TABLETTE -->
+<div class="fusion-sheet-backdrop" id="fusionSheetBackdrop"></div>
+<aside class="fusion-quick-sheet" id="fusionQuickSheet" aria-modal="true" aria-labelledby="fusionSheetTitle" role="dialog" data-lenis-prevent>
+  <div class="fusion-sheet-handle"></div>
+  <button class="fusion-sheet-close" type="button" aria-label="Fermer la fiche express" onclick="window.fusionCloseSheet&&window.fusionCloseSheet()"><i class="fa-solid fa-xmark"></i></button>
+  <div class="fusion-sheet-body" id="fusionSheetBody"></div>
+</aside>
+
+<!-- NAVIGATION MOBILE : raccourcis façon application -->
+<nav class="fusion-mobile-dock" aria-label="Navigation mobile de l'Herbier">
+  <button type="button" class="active" data-fusion-action="home"><i class="fa-solid fa-house"></i><span>Accueil</span></button>
+  <button type="button" data-fusion-action="catalog"><i class="fa-solid fa-leaf"></i><span>Herbier</span></button>
+  <button type="button" data-fusion-action="add"><i class="fa-solid fa-circle-plus"></i><span>Ajouter</span></button>
+  <button type="button" data-fusion-action="quiz"><i class="fa-solid fa-trophy"></i><span>Réviser</span></button>
+  <button type="button" data-fusion-action="care"><i class="fa-solid fa-hand-holding-droplet"></i><span>Soins</span></button>
+</nav>
 
 <!-- FOOTER -->
 <footer>
@@ -3863,7 +4041,7 @@ function injectGrading(){
 window.flashGrade=function(id,ok){var l=leit[id]||{box:0,due:0};if(ok){l.box=Math.min((l.box||0)+1,5);}else{l.box=1;}var days=BOX_DAYS[l.box]||1;l.due=Date.now()+days*86400000;leit[id]=l;saveLeit();if(typeof nextFlashcard==='function')nextFlashcard();};
 
 /* ---------- PWA manifest ---------- */
-function injectManifest(){try{var leaf="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%BF%3C/text%3E%3C/svg%3E";var mf={name:"L'Herbier de Vie",short_name:"Herbier",start_url:".",display:"standalone",background_color:"#FAF7F2",theme_color:"#1F2D24",icons:[{src:leaf,sizes:"512x512",type:"image/svg+xml"}]};var blob=new Blob([JSON.stringify(mf)],{type:'application/manifest+json'});var link=document.createElement('link');link.rel='manifest';link.href=URL.createObjectURL(blob);document.head.appendChild(link);}catch(e){}}
+function injectManifest(){try{if(document.querySelector('link[rel="manifest"]'))return;var leaf="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%BF%3C/text%3E%3C/svg%3E";var mf={name:"L'Herbier de Vie",short_name:"Herbier",start_url:".",display:"standalone",background_color:"#FAF7F2",theme_color:"#1F2D24",icons:[{src:leaf,sizes:"512x512",type:"image/svg+xml"}]};var blob=new Blob([JSON.stringify(mf)],{type:'application/manifest+json'});var link=document.createElement('link');link.rel='manifest';link.href=URL.createObjectURL(blob);document.head.appendChild(link);}catch(e){}}
 
 /* ---------- Footer + boutons header ---------- */
 function injectFooter(){if($('v7-footer'))return;var cat=$('plantCatalog');var f=document.createElement('footer');f.id='v7-footer';f.className='v7-footer';f.innerHTML='<div>L\'Herbier de Vie</div><div class="v7-credit" data-fr="Illustrations : Wikimedia Commons / loremflickr · Donnees enrichies par la communaute" data-en="Images: Wikimedia Commons / loremflickr · Data enriched by the community">Illustrations : Wikimedia Commons / loremflickr · Donnees enrichies par la communaute</div>';if(cat&&cat.parentNode){cat.parentNode.appendChild(f);}else{document.body.appendChild(f);}}
@@ -4234,6 +4412,272 @@ body.theme-dark .v8-leit .lv{background:rgba(125,142,116,.2);}
   document.addEventListener('click',function(e){var b=e.target.closest?e.target.closest('[data-sp-act]'):null;if(!b)return;var act=b.getAttribute('data-sp-act'),pid=b.getAttribute('data-pid'),sid=b.getAttribute('data-sid');if(act==='add')doAdd(pid);else if(act==='waterall')doWaterAll(pid);else if(act==='water')doWater(pid,sid);else if(act==='remove')doRemove(pid,sid);});
   document.addEventListener('change',function(e){var t=e.target;if(!t||!t.classList||!t.classList.contains('sp-edit'))return;doSet(t.getAttribute('data-pid'),t.getAttribute('data-sid'),t.getAttribute('data-field'),t.value);});
   try{var stl=document.createElement('style');stl.textContent='.sp-help{opacity:.7;font-size:.86rem;margin:4px 0 14px;}.sp-group{border:1px solid rgba(127,127,127,.25);border-radius:14px;padding:14px;margin:12px 0;}.sp-g-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}.sp-g-name{font-weight:700;font-size:1.05rem;flex:1;min-width:140px;}.sp-g-name small{opacity:.55;font-weight:500;margin-left:4px;}.sp-due-tag{display:inline-block;font-size:.68rem;padding:2px 8px;border-radius:999px;background:#c0392b;color:#fff;margin-left:8px;}.btn-luxe.sp-mini{padding:6px 12px;font-size:.8rem;}.sp-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 10px;border-radius:10px;margin:6px 0;background:rgba(127,127,127,.08);}.sp-row.due{background:rgba(212,160,80,.20);}.sp-row input{padding:5px 9px;border:1px solid rgba(127,127,127,.3);border-radius:8px;background:transparent;color:inherit;font-family:inherit;}.sp-row input.sp-label{font-weight:600;min-width:110px;flex:1;}.sp-row input.sp-zone{min-width:100px;flex:1;}.sp-row input.sp-num{width:60px;}.sp-int{font-size:.85rem;opacity:.85;display:inline-flex;align-items:center;gap:5px;}.sp-last{font-size:.78rem;opacity:.65;min-width:92px;}.btn-luxe.sp-ok{opacity:.55;}.sp-x{background:transparent;border:none;color:inherit;opacity:.45;cursor:pointer;font-size:1rem;padding:4px 6px;}.sp-x:hover{opacity:1;color:#c0392b;}';document.head.appendChild(stl);}catch(e){}
+})();
+</script>
+<script id="fusion-mobile-app-script">
+(function(){
+  'use strict';
+  function $(id){return document.getElementById(id);}
+  function all(sel){return Array.prototype.slice.call(document.querySelectorAll(sel));}
+  function getPlants(){try{return Array.isArray(plants)?plants:[];}catch(e){return [];}}
+  function getPlant(id){var list=getPlants();for(var i=0;i<list.length;i++){if(list[i]&&list[i].id===id)return list[i];}return null;}
+  function setText(id,val){var el=$(id);if(el)el.textContent=val;}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function store(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}}
+  function monthRange(p){
+    if(!p)return null;
+    if(Array.isArray(p.floraisonMois)&&p.floraisonMois.length)return p.floraisonMois;
+    if(Array.isArray(p.months)&&p.months.length)return p.months;
+    if(typeof window.bloomRange==='function'){try{var r=window.bloomRange(p);if(r&&r.length)return r;}catch(e){}}
+    return null;
+  }
+  function bloomsNow(p){
+    var m=(new Date()).getMonth()+1;
+    if(typeof window.bloomsIn==='function'){try{return window.bloomsIn(p,m);}catch(e){}}
+    var r=monthRange(p);
+    if(!r)return false;
+    if(r.length===2&&typeof r[0]==='number'&&typeof r[1]==='number'){
+      return r[0]<=r[1] ? (m>=r[0]&&m<=r[1]) : (m>=r[0]||m<=r[1]);
+    }
+    return r.indexOf(m)>=0;
+  }
+  function updateStats(){
+    var list=getPlants();
+    setText('fusionTotal',list.length);
+    setText('fusionGarden',list.filter(function(p){return p&&p.inGarden===true;}).length);
+    setText('fusionFamilies',(new Set(list.map(function(p){return p&&p.famille;}).filter(Boolean))).size);
+    setText('fusionBloom',list.filter(bloomsNow).length);
+    updateGardenPanel();
+    updateLearningPanel();
+  }
+  function waterDueInfo(p){
+    var journal=store('hdv_journal',{});
+    var j=journal[p.id]||{};
+    var every=parseInt(j.waterEvery,10)||0;
+    if(!every)return {due:false,label:'Routine à définir',zone:j.zone||''};
+    if(!j.lastWater)return {due:true,label:'Premier arrosage à noter',zone:j.zone||''};
+    var last=new Date(j.lastWater).getTime();
+    if(!last)return {due:true,label:'Date à vérifier',zone:j.zone||''};
+    var days=Math.floor((Date.now()-last)/86400000);
+    var left=every-days;
+    return {due:left<=0,label:left<=0?'À arroser aujourd’hui':'Dans '+left+' j',zone:j.zone||''};
+  }
+  function updateGardenPanel(){
+    var panel=$('fusionGardenPanel');if(!panel)return;
+    var adopted=getPlants().filter(function(p){return p&&p.inGarden===true;});
+    if(!adopted.length){panel.innerHTML='<div class="fusion-empty">Adoptez des plantes pour voir les rappels, zones et soins prioritaires.</div>';return;}
+    var rows=adopted.map(function(p){var d=waterDueInfo(p);return {p:p,d:d,score:(d.due?0:1)+(bloomsNow(p)?0:.5)};})
+      .sort(function(a,b){return a.score-b.score || String(a.p.nomFr).localeCompare(String(b.p.nomFr));}).slice(0,4);
+    panel.innerHTML=rows.map(function(x){
+      var sub=(x.d.zone?x.d.zone+' · ':'')+(bloomsNow(x.p)?'En floraison':'Suivi jardin');
+      return '<button class="fusion-panel-row" type="button" onclick="window.fusionOpenSheet&&window.fusionOpenSheet(\''+x.p.id+'\')"><span><b>'+esc(x.p.nomFr)+'</b><small>'+esc(sub)+'</small></span><span class="pill">'+esc(x.d.label)+'</span></button>';
+    }).join('');
+  }
+  function updateLearningPanel(){
+    var panel=$('fusionLearningPanel');if(!panel)return;
+    var leit=store('hdv_leitner',{}), quiz=store('hdv_quizhist',{}), list=getPlants();
+    var now=Date.now();
+    var due=list.filter(function(p){var l=leit[p.id]||{};return !l.due||l.due<=now;}).slice(0,3);
+    var totalQuiz=Object.keys(quiz).reduce(function(n,k){var q=quiz[k]||{};return n+(q.ok||0)+(q.no||0);},0);
+    if(!due.length&& !totalQuiz){panel.innerHTML='<div class="fusion-empty">Lancez quelques flashcards ou quiz pour créer un programme de révision.</div>';return;}
+    var html=due.map(function(p){var box=(leit[p.id]&&leit[p.id].box)||0;return '<button class="fusion-panel-row" type="button" onclick="window.fusionOpenSheet&&window.fusionOpenSheet(\''+p.id+'\')"><span><b>'+esc(p.nomFr)+'</b><small>'+esc(p.famille||p.nomLat||'')+'</small></span><span class="pill">niveau '+box+'</span></button>';}).join('');
+    if(totalQuiz){html+='<button class="fusion-panel-row" type="button" data-fusion-action="quiz"><span><b>Quiz adaptatif</b><small>'+totalQuiz+' réponses enregistrées</small></span><span class="pill">continuer</span></button>';}
+    panel.innerHTML=html;
+    bind();
+  }
+  function smoothTo(el,offset){
+    if(!el)return;
+    if(window.lenis&&typeof window.lenis.scrollTo==='function'){try{window.lenis.scrollTo(el,{offset:offset||-90});return;}catch(e){}}
+    var y=el.getBoundingClientRect().top+window.pageYOffset+(offset||-90);
+    window.scrollTo({top:y,behavior:'smooth'});
+  }
+  function closePanels(){
+    if(document.body.classList.contains('flash-on')&&typeof window.toggleFlashMode==='function')try{window.toggleFlashMode();}catch(e){}
+    if(document.body.classList.contains('quiz-on')&&typeof window.toggleQuizMode==='function')try{window.toggleQuizMode();}catch(e){}
+    if(document.body.classList.contains('cal-on')&&typeof window.toggleCalMode==='function')try{window.toggleCalMode();}catch(e){}
+    if(document.body.classList.contains('dash-on')&&typeof window.toggleDashMode==='function')try{window.toggleDashMode();}catch(e){}
+    if(document.body.classList.contains('care-on')&&typeof window.toggleCareMode==='function')try{window.toggleCareMode();}catch(e){}
+  }
+  function enhanceCatalogCards(){
+    all('#plantCatalog .plant-actions').forEach(function(actions){
+      if(actions.querySelector('.fusion-quick-btn'))return;
+      var sec=actions.closest('.scrolly-section');
+      if(!sec||!sec.id)return;
+      var id=sec.id.replace('section-','');
+      var btn=document.createElement('button');
+      btn.type='button';
+      btn.className='btn-luxe fusion-quick-btn';
+      btn.innerHTML='<i class="fa-solid fa-up-right-and-down-left-from-center"></i> Fiche express';
+      btn.addEventListener('click',function(ev){ev.preventDefault();ev.stopPropagation();openQuickSheet(id);});
+      actions.insertBefore(btn,actions.firstChild);
+    });
+  }
+  function imageForPlant(id){
+    try{var st=window.sectionImgs&&window.sectionImgs[id];if(st&&st.imgs&&st.imgs[st.idx])return st.imgs[st.idx];}catch(e){}
+    var media=document.getElementById('media-'+id);
+    var img=media?media.querySelector('.scrolly-img'):null;
+    return img&&img.src?img.src:'';
+  }
+  function field(label,value){
+    if(!value)return '';
+    return '<div class="fusion-sheet-item"><b>'+esc(label)+'</b><span>'+esc(value)+'</span></div>';
+  }
+  function openQuickSheet(id){
+    var p=getPlant(id), body=$('fusionSheetBody'), sheet=$('fusionQuickSheet'), back=$('fusionSheetBackdrop');
+    if(!p||!body||!sheet||!back)return;
+    var img=imageForPlant(id);
+    var tox=p.toxDetail||p.tox_detail||p.toxicite||'Non renseignée';
+    var bloom=(typeof window.bloomLabel==='function')?window.bloomLabel(p):(p.fl_texte||p.floraison||'');
+    var care=p.besoins||p.description||'';
+    var due=waterDueInfo(p);
+    body.innerHTML=
+      '<div class="fusion-sheet-hero">'+
+        '<div class="fusion-sheet-img" style="'+(img?'background-image:url('+esc(img)+')':'')+'">'+(img?'':'<i class="fa-solid fa-leaf"></i>')+'</div>'+
+        '<div class="fusion-sheet-title"><h2 id="fusionSheetTitle">'+esc(p.nomFr||'Fiche botanique')+'</h2><em>'+esc(p.nomLat||'')+'</em><br><span>'+esc(p.famille||p.type||'Herbier')+'</span></div>'+
+      '</div>'+
+      '<div class="fusion-sheet-grid">'+
+        field('Type',p.type)+field('Origine',p.region)+field('Toxicité',tox)+field('Floraison',bloom)+field('Exposition',p.exposition||p.soleil)+field('Arrosage',p.arrosage||p.eau)+field('Rappel',due.label)+field('Tenue vase',p.tenueVase)+
+      '</div>'+
+      (care?'<div class="fusion-sheet-note">'+esc(care)+'</div>':'')+
+      '<div class="fusion-sheet-actions">'+
+        '<button class="btn-luxe '+(p.inGarden?'active':'')+'" onclick="toggleGardenStatus(\''+p.id+'\');window.fusionOpenSheet(\''+p.id+'\')"><i class="fa-solid fa-heart"></i> '+(p.inGarden?'Adoptée':'Adopter')+'</button>'+
+        '<button class="btn-luxe" onclick="openEditDrawer(\''+p.id+'\')"><i class="fa-solid fa-pen-to-square"></i> Modifier</button>'+
+        '<button class="btn-luxe" onclick="openJournal(\''+p.id+'\')"><i class="fa-solid fa-book"></i> Journal</button>'+
+        '<button class="btn-luxe" onclick="sharePlant(\''+p.id+'\')"><i class="fa-solid fa-share-nodes"></i> Partager</button>'+
+      '</div>';
+    back.classList.add('open');sheet.classList.add('open');document.body.classList.add('fusion-sheet-on');
+  }
+  function closeQuickSheet(){
+    var sheet=$('fusionQuickSheet'), back=$('fusionSheetBackdrop');
+    if(sheet)sheet.classList.remove('open');
+    if(back)back.classList.remove('open');
+    document.body.classList.remove('fusion-sheet-on');
+  }
+  window.fusionOpenSheet=openQuickSheet;
+  window.fusionCloseSheet=closeQuickSheet;
+  function markDock(action){
+    var key=(action==='home')?'home':(action==='add'?'add':(action==='quiz'?'quiz':(action==='care'?'care':'catalog')));
+    all('.fusion-mobile-dock button').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-fusion-action')===key);});
+  }
+  function action(name){
+    if(!name)return;
+    if(name==='home'){
+      closePanels();
+      smoothTo($('heroSection'),0);
+      markDock('home');
+      return;
+    }
+    if(name==='catalog'){
+      closePanels();
+      if(typeof window.setMode==='function')try{window.setMode('learn');}catch(e){}
+      smoothTo($('plantCatalog'),-94);
+      markDock('catalog');
+      return;
+    }
+    if(name==='garden'){
+      closePanels();
+      if(typeof window.setMode==='function')try{window.setMode('garden');}catch(e){}
+      smoothTo($('plantCatalog'),-94);
+      markDock('catalog');
+      return;
+    }
+    if(name==='add'){
+      closePanels();
+      if(typeof window.openDrawer==='function')try{window.openDrawer('add');}catch(e){}
+      markDock('add');
+      return;
+    }
+    if(name==='flash'){
+      closePanels();
+      if(typeof window.setMode==='function')try{window.setMode('learn');}catch(e){}
+      if(typeof window.toggleFlashMode==='function')try{window.toggleFlashMode();}catch(e){}
+      markDock('catalog');
+      return;
+    }
+    if(name==='quiz'){
+      closePanels();
+      if(typeof window.setMode==='function')try{window.setMode('learn');}catch(e){}
+      if(typeof window.toggleQuizMode==='function')try{window.toggleQuizMode();}catch(e){}
+      markDock('quiz');
+      return;
+    }
+    if(name==='calendar'){
+      closePanels();
+      if(typeof window.toggleCalMode==='function')try{window.toggleCalMode();}catch(e){}
+      markDock('catalog');
+      return;
+    }
+    if(name==='care'){
+      closePanels();
+      if(typeof window.toggleCareMode==='function')try{window.toggleCareMode();}catch(e){}
+      markDock('care');
+      return;
+    }
+    if(name==='dash'){
+      closePanels();
+      if(typeof window.toggleDashMode==='function')try{window.toggleDashMode();}catch(e){}
+      markDock('catalog');
+      return;
+    }
+    if(name==='print'&&typeof window.buildPrint==='function'){
+      window.buildPrint();
+    }
+  }
+  function bind(){
+    all('[data-fusion-action]').forEach(function(btn){
+      if(btn.getAttribute('data-fusion-bound'))return;
+      btn.setAttribute('data-fusion-bound','1');
+      btn.addEventListener('click',function(){action(btn.getAttribute('data-fusion-action'));});
+    });
+    var back=$('fusionSheetBackdrop');
+    if(back&&!back.getAttribute('data-fusion-bound')){back.setAttribute('data-fusion-bound','1');back.addEventListener('click',closeQuickSheet);}
+  }
+  function installHooks(){
+    if(window.__fusionHooksInstalled)return;
+    window.__fusionHooksInstalled=true;
+    if(typeof window.renderCatalog==='function'){
+      var oldRender=window.renderCatalog;
+      window.renderCatalog=function(){
+        var out=oldRender.apply(this,arguments);
+        try{updateStats();}catch(e){}
+        try{enhanceCatalogCards();}catch(e){}
+        return out;
+      };
+    }
+    if(typeof window.toggleGardenStatus==='function'){
+      var oldGarden=window.toggleGardenStatus;
+      window.toggleGardenStatus=function(){
+        var out=oldGarden.apply(this,arguments);
+        try{updateStats();}catch(e){}
+        return out;
+      };
+    }
+    if(typeof window.handleFormSubmit==='function'){
+      var oldSubmit=window.handleFormSubmit;
+      window.handleFormSubmit=function(){
+        var out=oldSubmit.apply(this,arguments);
+        setTimeout(updateStats,0);
+        return out;
+      };
+    }
+  }
+  function registerPWA(){
+    if(!('serviceWorker' in navigator))return;
+    if(location.protocol!=='http:'&&location.protocol!=='https:')return;
+    navigator.serviceWorker.register('./sw.js').catch(function(){});
+  }
+  function init(){
+    bind();
+    installHooks();
+    registerPWA();
+    updateStats();
+    enhanceCatalogCards();
+    setTimeout(updateStats,400);
+    setTimeout(updateStats,1400);
+    setTimeout(enhanceCatalogCards,1500);
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')closeQuickSheet();});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
 </body>

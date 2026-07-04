@@ -1,0 +1,21 @@
+{
+  "name": "L'Herbier de Vie",
+  "short_name": "Herbier",
+  "description": "Carnet botanique premium avec herbier, jardin, révisions, soins et floraisons.",
+  "lang": "fr-FR",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF7F2",
+  "theme_color": "#1F2D24",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "lifestyle", "utilities"]
+}
