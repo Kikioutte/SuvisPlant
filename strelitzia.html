@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strelitzia — L'Élégance Tropicale | SuvisPlant</title>
+<meta name="description" content="SuvisPlant — Atlas botanique immersif du Strelitzia reginae (Oiseau de paradis) : germination, substrat et exposition, en scrollytelling 3D.">
+<meta name="theme-color" content="#07090A">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%BF%3C/text%3E%3C/svg%3E">
+
+<!-- Polices auto-hébergées (variables, latin) : Space Grotesk (titres) + JetBrains Mono (données) -->
+<link rel="preload" as="font" type="font/woff2" href="fonts/space-grotesk-latin-wght-normal.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="fonts/jetbrains-mono-latin-wght-normal.woff2" crossorigin>
+<style>
+  @font-face {
+    font-family: 'Space Grotesk';
+    font-style: normal;
+    font-weight: 300 700;
+    font-display: swap;
+    src: url('fonts/space-grotesk-latin-wght-normal.woff2') format('woff2-variations');
+  }
+  @font-face {
+    font-family: 'JetBrains Mono';
+    font-style: normal;
+    font-weight: 100 800;
+    font-display: swap;
+    src: url('fonts/jetbrains-mono-latin-wght-normal.woff2') format('woff2-variations');
+  }
+</style>
+
+<!-- Tailwind CSS : feuille statique pré-compilée (css/strelitzia.tw.css).
+     Après modification des classes dans ce fichier, régénérer avec :
+     npx tailwindcss@3.4 -i input.css -o css/strelitzia.tw.css --minify
+     (config : content=[strelitzia.html], theme.extend = fontFamily display/mono + couleurs ink/mist/sage) -->
+<link rel="stylesheet" href="css/strelitzia.tw.css">
+
+<style>
+  html { scroll-behavior: smooth; overflow-x: clip; }
+  body { background: #07090A; overflow-x: clip; }
+
+  ::selection { background: #9CB58A; color: #07090A; }
+
+  /* ---- Fond fixe : voile atmosphérique en attendant la scène Three.js ---- */
+  #scene-stage {
+    background:
+      radial-gradient(circle at 50% 30%, rgba(45,64,45,0.35), transparent 55%),
+      radial-gradient(circle at 80% 80%, rgba(20,30,22,0.6), transparent 60%),
+      #07090A;
+  }
+  #scene-stage::after {
+    content: "";
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(circle at 50% 40%, black 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* ---- Titre monumental ---- */
+  .hero-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    line-height: 0.92;
+    letter-spacing: -0.02em;
+    font-size: clamp(3.25rem, 9vw, 8.5rem);
+  }
+  .hero-title-sub {
+    font-weight: 300;
+    font-size: clamp(1.5rem, 3.4vw, 2.75rem);
+    letter-spacing: -0.01em;
+    color: rgba(242,241,234,0.75);
+  }
+
+  /* ---- Marqueurs de données flottants (repères type HUD) ---- */
+  /* display géré par les utilitaires Tailwind (hidden / sm:flex / lg:flex) */
+  .data-marker {
+    position: absolute;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(242,241,234,0.65);
+    white-space: nowrap;
+  }
+  .data-marker-dot {
+    width: 6px; height: 6px; border-radius: 9999px;
+    background: #9CB58A;
+    box-shadow: 0 0 0 4px rgba(156,181,138,0.15);
+    flex-shrink: 0;
+  }
+  .data-marker-line {
+    width: 28px; height: 1px;
+    background: rgba(242,241,234,0.25);
+    flex-shrink: 0;
+  }
+  .data-marker b {
+    color: rgba(242,241,234,0.9);
+    font-weight: 500;
+    margin-right: 0.35em;
+  }
+
+  /* ---- Fiches techniques flottantes ---- */
+  .fiche-panel {
+    max-width: 30rem;
+    background: rgba(10,12,10,0.45);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(242,241,234,0.08);
+    box-shadow: 0 30px 80px -30px rgba(0,0,0,0.7);
+  }
+
+  /* Angles techniques (repères "chirurgicaux") sur la section hero */
+  .hud-corner { position: absolute; width: 22px; height: 22px; opacity: 0.4; }
+  .hud-corner::before, .hud-corner::after { content: ""; position: absolute; background: #F2F1EA; }
+  .hud-corner::before { width: 100%; height: 1px; top: 0; left: 0; }
+  .hud-corner::after { width: 1px; height: 100%; top: 0; left: 0; }
+  .hud-corner.br { transform: rotate(180deg); }
+
+  .chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: rgba(242,241,234,0.8);
+    border: 1px solid rgba(242,241,234,0.15);
+    background: rgba(255,255,255,0.03);
+  }
+
+  .scroll-cue-line { width: 1px; height: 40px; background: linear-gradient(to bottom, rgba(242,241,234,0.6), transparent); }
+</style>
+</head>
+<body class="text-[#F2F1EA] font-display antialiased overflow-x-hidden">
+
+<!-- ==================================================================
+     FOND FIXE PLEIN ÉCRAN — accueille la scène 3D (Strelitzia)
+     ================================================================== -->
+<div id="scene-stage" class="fixed inset-0 z-0 h-screen w-screen overflow-hidden">
+  <!-- SCÈNE THREE.JS (MODÈLE STRELITZIA) : js/strelitzia-scene.js
+       Modèle procédural stylisé en attendant un vrai .glb — pour le brancher,
+       remplacer buildPlant() dans le module, la chorégraphie scroll est conservée. -->
+  <canvas id="strelitzia-canvas" class="h-full w-full block" data-gsap-target="scene-canvas"></canvas>
+</div>
+
+<!-- ==================================================================
+     HEADER — transparent, fixe, glassmorphism au scroll
+     ================================================================== -->
+<header id="site-header" class="fixed top-0 inset-x-0 z-50 transition-colors duration-500" data-gsap="header">
+  <div class="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-5 lg:px-10">
+
+    <a href="index.html" class="flex items-center gap-2.5 shrink-0">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" class="text-sage">
+        <path d="M12 2C9 6 9 10 12 13C15 10 15 6 12 2Z" fill="currentColor"/>
+        <path d="M12 22V13" stroke="currentColor" stroke-width="1.4"/>
+      </svg>
+      <span class="font-display text-sm tracking-[0.15em] uppercase">SuvisPlant</span>
+    </a>
+
+    <nav class="hidden md:flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1.5 backdrop-blur-xl">
+      <a href="index.html#plantCatalog" class="rounded-full px-4 py-1.5 text-xs font-mono uppercase tracking-wider text-white/70 hover:text-white hover:bg-white/10 transition">Espèces</a>
+      <a href="#fiches" class="rounded-full px-4 py-1.5 text-xs font-mono uppercase tracking-wider text-white/70 hover:text-white hover:bg-white/10 transition">Culture</a>
+      <a href="index.html" class="rounded-full px-4 py-1.5 text-xs font-mono uppercase tracking-wider text-white/70 hover:text-white hover:bg-white/10 transition">Journal</a>
+      <a href="index.html" class="rounded-full px-4 py-1.5 text-xs font-mono uppercase tracking-wider text-white/70 hover:text-white hover:bg-white/10 transition">À propos</a>
+    </nav>
+
+    <a href="index.html#plante=p108-strelitzia-reginae"
+       class="flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-xs font-mono uppercase tracking-wider backdrop-blur-xl hover:bg-white/10 hover:border-white/30 transition shrink-0">
+      Explorer
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </div>
+</header>
+
+<main class="relative z-10">
+
+  <!-- ================================================================
+       HERO — titre monumental + repères HUD + intro
+       ================================================================ -->
+  <section id="hero" data-gsap-section="hero" class="relative flex h-[100svh] min-h-[760px] w-full flex-col justify-between overflow-hidden px-6 pb-10 pt-28 lg:px-14 lg:pt-32">
+
+    <span class="hud-corner tl" style="top:96px; left:24px;"></span>
+    <span class="hud-corner br" style="bottom:24px; right:24px;"></span>
+
+    <!-- Kicker -->
+    <div class="flex items-center gap-3 text-white/50" data-gsap="hero-kicker">
+      <span class="block h-px w-8 bg-white/40"></span>
+      <span class="font-mono text-[0.68rem] uppercase tracking-[0.25em]">SuvisPlant — Atlas Botanique</span>
+    </div>
+
+    <!-- Titre + repères de données -->
+    <div class="relative flex-1 flex items-center">
+      <div class="relative w-full">
+        <h1 class="hero-title" data-gsap="hero-title">
+          <span class="block">Strelitzia</span>
+          <span class="hero-title-sub block mt-2">L'Élégance Tropicale</span>
+        </h1>
+
+        <!-- Repères flottants type HUD, positionnés autour de l'emplacement du futur modèle 3D -->
+        <div class="data-marker hidden sm:flex" style="top: -8%; right: 6%;" data-gsap="marker-famille">
+          <span class="data-marker-line"></span>
+          <span class="data-marker-dot"></span>
+          <span><b>Famille</b> Strelitziaceae</span>
+        </div>
+        <div class="data-marker hidden sm:flex" style="top: 46%; right: -2%;" data-gsap="marker-origine">
+          <span class="data-marker-line"></span>
+          <span class="data-marker-dot"></span>
+          <span><b>Origine</b> Afrique australe</span>
+        </div>
+        <div class="data-marker hidden sm:flex" style="bottom: 4%; right: 18%;" data-gsap="marker-hauteur">
+          <span class="data-marker-line"></span>
+          <span class="data-marker-dot"></span>
+          <span><b>Hauteur</b> 60 – 200 cm</span>
+        </div>
+        <div class="data-marker hidden lg:flex" style="top: -14%; left: 1%;" data-gsap="marker-type">
+          <span class="data-marker-dot"></span>
+          <span class="data-marker-line"></span>
+          <span><b>Type</b> Vivace rhizomateuse</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bas de hero : texte d'intro + cue de scroll -->
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-8" data-gsap="hero-footer">
+      <p class="max-w-md text-sm leading-relaxed text-white/55" data-gsap="hero-text">
+        Reconnu pour son inflorescence spectaculaire évoquant la crête d'un oiseau tropical,
+        le <em class="not-italic text-white/80">Strelitzia reginae</em> incarne l'élégance
+        sculpturale du vivant. Cet atlas retrace, étape par étape, les conditions précises
+        de sa culture.
+      </p>
+      <div class="flex items-center gap-3 md:flex-col md:items-center" data-gsap="scroll-cue">
+        <span class="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-white/40 md:[writing-mode:vertical-rl]">Faites défiler</span>
+        <span class="scroll-cue-line"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       FICHES TECHNIQUES — panneaux asymétriques déclenchés au scroll
+       ================================================================ -->
+  <div id="fiches" data-gsap-section="fiches">
+
+    <!-- Fiche 01 — Germination (gauche) -->
+    <section class="relative flex min-h-screen w-full items-center justify-start px-6 lg:px-16" data-panel-index="1">
+      <article class="fiche-panel rounded-2xl p-8 lg:p-10" data-gsap="panel-1">
+        <div class="mb-6 flex items-center gap-3 text-sage">
+          <span class="font-mono text-xs tracking-[0.2em]">01 / 03</span>
+          <span class="block h-px flex-1 bg-white/10"></span>
+          <span class="font-mono text-xs uppercase tracking-[0.2em] text-white/40">Germination</span>
+        </div>
+        <h2 class="font-display text-2xl lg:text-3xl font-medium mb-4">Processus de germination</h2>
+        <p class="text-sm leading-relaxed text-white/60">
+          Maîtriser les conditions et la patience pour les semis. Les graines,
+          protégées par une arille orangée, nécessitent une scarification et un
+          trempage préalable pour lever la dormance.
+        </p>
+        <div class="mt-6 flex flex-wrap gap-2">
+          <span class="chip rounded-full px-3 py-1.5">Température · 24–27°C</span>
+          <span class="chip rounded-full px-3 py-1.5">Délai · 1–3 mois</span>
+        </div>
+      </article>
+    </section>
+
+    <!-- Fiche 02 — Substrat (droite) -->
+    <section class="relative flex min-h-screen w-full items-center justify-end px-6 lg:px-16" data-panel-index="2">
+      <article class="fiche-panel rounded-2xl p-8 lg:p-10" data-gsap="panel-2">
+        <div class="mb-6 flex items-center gap-3 text-sage">
+          <span class="font-mono text-xs tracking-[0.2em]">02 / 03</span>
+          <span class="block h-px flex-1 bg-white/10"></span>
+          <span class="font-mono text-xs uppercase tracking-[0.2em] text-white/40">Substrat</span>
+        </div>
+        <h2 class="font-display text-2xl lg:text-3xl font-medium mb-4">Exigences du substrat</h2>
+        <p class="text-sm leading-relaxed text-white/60">
+          Créer un terreau drainant et riche. Un mélange de terreau horticole,
+          de sable grossier et de compost mûr reproduit la fraîcheur des sols
+          bien drainés de son habitat d'origine.
+        </p>
+        <div class="mt-6 flex flex-wrap gap-2">
+          <span class="chip rounded-full px-3 py-1.5">Drainage · Élevé</span>
+          <span class="chip rounded-full px-3 py-1.5">pH · 6.0 – 6.5</span>
+        </div>
+      </article>
+    </section>
+
+    <!-- Fiche 03 — Exposition (gauche) -->
+    <section class="relative flex min-h-screen w-full items-center justify-start px-6 lg:px-16" data-panel-index="3">
+      <article class="fiche-panel rounded-2xl p-8 lg:p-10" data-gsap="panel-3">
+        <div class="mb-6 flex items-center gap-3 text-sage">
+          <span class="font-mono text-xs tracking-[0.2em]">03 / 03</span>
+          <span class="block h-px flex-1 bg-white/10"></span>
+          <span class="font-mono text-xs uppercase tracking-[0.2em] text-white/40">Exposition</span>
+        </div>
+        <h2 class="font-display text-2xl lg:text-3xl font-medium mb-4">Exposition</h2>
+        <p class="text-sm leading-relaxed text-white/60">
+          Maximiser la lumière pour une croissance optimale. Une lumière vive
+          et abondante — sans soleil brûlant aux heures les plus chaudes —
+          favorise l'apparition des inflorescences.
+        </p>
+        <div class="mt-6 flex flex-wrap gap-2">
+          <span class="chip rounded-full px-3 py-1.5">Lumière · Vive indirecte</span>
+          <span class="chip rounded-full px-3 py-1.5">Durée · 6h+ / jour</span>
+        </div>
+      </article>
+    </section>
+  </div>
+
+  <!-- ================================================================
+       CTA FINAL
+       ================================================================ -->
+  <section class="relative flex min-h-[60vh] w-full flex-col items-center justify-center gap-8 px-6 text-center" data-gsap-section="cta">
+    <span class="font-mono text-[0.68rem] uppercase tracking-[0.25em] text-white/40">Aller plus loin</span>
+    <h2 class="font-display text-3xl lg:text-5xl font-medium max-w-2xl leading-tight">
+      Découvrez la fiche complète du Strelitzia reginae
+    </h2>
+    <a href="index.html#plante=p108-strelitzia-reginae"
+       class="flex items-center gap-3 rounded-full border border-white/15 bg-white/5 px-6 py-3 text-xs font-mono uppercase tracking-wider backdrop-blur-xl hover:bg-white/10 hover:border-white/30 transition">
+      Ouvrir la fiche botanique
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </section>
+</main>
+
+<footer class="relative z-10 border-t border-white/5 px-6 py-10 text-center lg:px-14">
+  <p class="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-white/30">© 2026 SuvisPlant — Atlas botanique</p>
+</footer>
+
+<!-- GSAP + ScrollTrigger + Lenis (auto-hébergés) -->
+<script src="js/vendor/gsap.min.js"></script>
+<script src="js/vendor/ScrollTrigger.min.js"></script>
+<script src="js/vendor/lenis.min.js"></script>
+<script>
+(function () {
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Lenis : défilement lissé, synchronisé sur le ticker GSAP (un seul RAF
+  // partagé avec la scène Three.js). Sans effet si prefers-reduced-motion.
+  if (window.Lenis && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const lenis = new Lenis();
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add((time) => lenis.raf(time * 1000));
+    gsap.ticker.lagSmoothing(0);
+  }
+
+  // Header : intensifie le glassmorphism une fois le hero dépassé
+  const header = document.getElementById('site-header');
+  ScrollTrigger.create({
+    start: 'top top-=10',
+    end: 99999,
+    onUpdate(self) {
+      header.classList.toggle('bg-black/30', self.scroll() > 40);
+      header.classList.toggle('backdrop-blur-xl', self.scroll() > 40);
+      header.classList.toggle('border-b', self.scroll() > 40);
+      header.classList.toggle('border-white/5', self.scroll() > 40);
+    },
+  });
+
+  // Entrée du hero
+  gsap.timeline({ defaults: { ease: 'power3.out' } })
+    .from('[data-gsap="hero-kicker"]', { opacity: 0, y: 12, duration: 0.6 })
+    .from('[data-gsap="hero-title"]', { opacity: 0, y: 40, duration: 0.9 }, '-=0.3')
+    .from('[data-gsap^="marker-"]', { opacity: 0, x: -10, stagger: 0.12, duration: 0.6 }, '-=0.4')
+    .from('[data-gsap="hero-footer"]', { opacity: 0, y: 20, duration: 0.6 }, '-=0.3');
+
+  // Révélation des fiches techniques au scroll
+  document.querySelectorAll('[data-gsap^="panel-"]').forEach((panel) => {
+    const fromRight = panel.closest('section').classList.contains('justify-end');
+    gsap.from(panel, {
+      opacity: 0,
+      x: fromRight ? 60 : -60,
+      duration: 0.9,
+      ease: 'power3.out',
+      scrollTrigger: {
+        trigger: panel,
+        start: 'top 75%',
+        toggleActions: 'play none none reverse',
+      },
+    });
+  });
+
+})();
+</script>
+<!-- Scène 3D : plante procédurale + chorégraphie caméra/modèle au scroll -->
+<script type="module" src="js/strelitzia-scene.js"></script>
+</body>
+</html>

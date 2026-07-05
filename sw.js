@@ -6,7 +6,7 @@
    - Images & polices tierces (Wikimedia, Unsplash, Google Fonts) : stale-while-revalidate plafonné. */
 'use strict';
 
-const VERSION = 'hdv-v6';
+const VERSION = 'hdv-v7';
 const SHELL_CACHE = VERSION + '-shell';
 const RUNTIME_CACHE = VERSION + '-runtime';
 const RUNTIME_MAX_ENTRIES = 260;
@@ -23,6 +23,15 @@ const SHELL = [
   'js/extensions-v10.js',
   'plants.json',
   'especes.html',
+  'strelitzia.html',
+  'css/strelitzia.tw.css',
+  'js/strelitzia-scene.js',
+  'js/vendor/gsap.min.js',
+  'js/vendor/ScrollTrigger.min.js',
+  'js/vendor/lenis.min.js',
+  'js/vendor/three.module.min.js',
+  'fonts/space-grotesk-latin-wght-normal.woff2',
+  'fonts/jetbrains-mono-latin-wght-normal.woff2',
   'manifest.webmanifest',
   'icons/icon-192.png',
   'icons/icon-512.png'
