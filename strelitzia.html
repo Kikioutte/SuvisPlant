@@ -8,10 +8,25 @@
 <meta name="theme-color" content="#07090A">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%BF%3C/text%3E%3C/svg%3E">
 
-<!-- Polices : Space Grotesk (titres monumentaux) + JetBrains Mono (données / labels techniques) -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Polices auto-hébergées (variables, latin) : Space Grotesk (titres) + JetBrains Mono (données) -->
+<link rel="preload" as="font" type="font/woff2" href="fonts/space-grotesk-latin-wght-normal.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="fonts/jetbrains-mono-latin-wght-normal.woff2" crossorigin>
+<style>
+  @font-face {
+    font-family: 'Space Grotesk';
+    font-style: normal;
+    font-weight: 300 700;
+    font-display: swap;
+    src: url('fonts/space-grotesk-latin-wght-normal.woff2') format('woff2-variations');
+  }
+  @font-face {
+    font-family: 'JetBrains Mono';
+    font-style: normal;
+    font-weight: 100 800;
+    font-display: swap;
+    src: url('fonts/jetbrains-mono-latin-wght-normal.woff2') format('woff2-variations');
+  }
+</style>
 
 <!-- Tailwind CSS : feuille statique pré-compilée (css/strelitzia.tw.css).
      Après modification des classes dans ce fichier, régénérer avec :
@@ -124,7 +139,9 @@
      FOND FIXE PLEIN ÉCRAN — accueille la scène 3D (Strelitzia)
      ================================================================== -->
 <div id="scene-stage" class="fixed inset-0 z-0 h-screen w-screen overflow-hidden">
-  <!-- PLACEHOLDER : SCÈNE THREE.JS (MODÈLE STRELITZIA) ICI -->
+  <!-- SCÈNE THREE.JS (MODÈLE STRELITZIA) : js/strelitzia-scene.js
+       Modèle procédural stylisé en attendant un vrai .glb — pour le brancher,
+       remplacer buildPlant() dans le module, la chorégraphie scroll est conservée. -->
   <canvas id="strelitzia-canvas" class="h-full w-full block" data-gsap-target="scene-canvas"></canvas>
 </div>
 
@@ -309,12 +326,22 @@
   <p class="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-white/30">© 2026 SuvisPlant — Atlas botanique</p>
 </footer>
 
-<!-- GSAP + ScrollTrigger (auto-hébergés, v3.12.2) : socle prêt pour brancher les animations 3D / scrollytelling -->
+<!-- GSAP + ScrollTrigger + Lenis (auto-hébergés) -->
 <script src="js/vendor/gsap.min.js"></script>
 <script src="js/vendor/ScrollTrigger.min.js"></script>
+<script src="js/vendor/lenis.min.js"></script>
 <script>
 (function () {
   gsap.registerPlugin(ScrollTrigger);
+
+  // Lenis : défilement lissé, synchronisé sur le ticker GSAP (un seul RAF
+  // partagé avec la scène Three.js). Sans effet si prefers-reduced-motion.
+  if (window.Lenis && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const lenis = new Lenis();
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add((time) => lenis.raf(time * 1000));
+    gsap.ticker.lagSmoothing(0);
+  }
 
   // Header : intensifie le glassmorphism une fois le hero dépassé
   const header = document.getElementById('site-header');
@@ -352,10 +379,9 @@
     });
   });
 
-  // TODO : brancher ici la timeline Three.js (rotation / cadrage du Strelitzia)
-  // en s'appuyant sur les mêmes ScrollTrigger que les fiches ci-dessus
-  // (ex: un ScrollTrigger par [data-panel-index] pilotant la caméra / le modèle).
 })();
 </script>
+<!-- Scène 3D : plante procédurale + chorégraphie caméra/modèle au scroll -->
+<script type="module" src="js/strelitzia-scene.js"></script>
 </body>
 </html>

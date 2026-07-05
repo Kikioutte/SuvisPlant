@@ -25,8 +25,13 @@ const SHELL = [
   'especes.html',
   'strelitzia.html',
   'css/strelitzia.tw.css',
+  'js/strelitzia-scene.js',
   'js/vendor/gsap.min.js',
   'js/vendor/ScrollTrigger.min.js',
+  'js/vendor/lenis.min.js',
+  'js/vendor/three.module.min.js',
+  'fonts/space-grotesk-latin-wght-normal.woff2',
+  'fonts/jetbrains-mono-latin-wght-normal.woff2',
   'manifest.webmanifest',
   'icons/icon-192.png',
   'icons/icon-512.png'
